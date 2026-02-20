@@ -289,15 +289,14 @@ if (fullscreenBtn) {
 // ── Zoom Controls ───────────────────────────────────────────
 const scaleUpBtn = document.getElementById('scale-up');
 const scaleDownBtn = document.getElementById('scale-down');
-const mainContent = document.querySelector('.main-content');
 let currentZoom = 1;
 
-if (scaleUpBtn && scaleDownBtn && mainContent) {
+if (scaleUpBtn && scaleDownBtn && gameContainer) {
     const updateZoom = () => {
-        mainContent.style.transform = `scale(${currentZoom})`;
-        mainContent.style.transformOrigin = 'top center';
-        mainContent.style.width = `${100 / currentZoom}%`;
-        mainContent.style.height = `${100 / currentZoom}%`;
+        gameContainer.style.transform = `scale(${currentZoom})`;
+        gameContainer.style.transformOrigin = 'top center';
+        gameContainer.style.width = `${100 / currentZoom}%`;
+        gameContainer.style.height = `${100 / currentZoom}%`;
     };
 
     scaleUpBtn.addEventListener('click', () => {

@@ -82,7 +82,7 @@ function speakBtn(text) {
 }
 
 function guardianBtn(actKey) {
-  return `<div style="width:100%;display:flex;justify-content:flex-end;margin-top:0.5rem;"><button class="btn guardian-trigger" data-key="${actKey}" style="background:var(--accent);font-size:0.85rem;padding:0.45rem 1rem;">🧑‍🤝‍🧒 Play Together</button></div>`;
+  return `<div style="width:100%;display:flex;justify-content:center;margin-top:0.5rem;"><button class="btn guardian-trigger" data-key="${actKey}" style="background:var(--accent);font-size:0.85rem;padding:0.45rem 1rem;">🧑‍🤝‍🧒 Play Together</button></div>`;
 }
 
 function showGuardianOverlay(actKey) {
