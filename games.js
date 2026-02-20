@@ -1304,17 +1304,21 @@ const activities = {
       const dayData = getCurrentDayData();
       recordProgress('activity', 'Letter Tracer');
 
-      const letters = dayData.letters || ['A', 'B'];
-      const letter = pick(letters);
+      const letters = dayData.letters || ['A', 'B', 'C'];
+      // Ensure we are working with an array of single characters
+      const charPool = letters.join('').replace(/\s+/g, '').split('');
+      const targetChars = choices(charPool, Math.min(3, charPool.length)); // Pick 3 random letters to trace
+      let currentCharIndex = 0;
+      let letter = targetChars[currentCharIndex];
 
       container.innerHTML = `
         <h2 class="game-title">Trace the Letter ✍️</h2>
-        <p style="font-size:1.1rem;color:#888;margin-bottom:1rem;">Follow the shape of the letter <strong>\${letter}</strong>!</p>
+        <p style="font-size:1.1rem;color:#888;margin-bottom:1rem;" id="trace-instruction">Follow the shape of the letter <strong>${letter}</strong>!</p>
         
         <div style="position:relative;width:300px;height:350px;margin:0 auto 1.5rem auto;border:4px dashed #ddd;border-radius:24px;background:#fafafa;overflow:hidden;touch-action:none;">
             <!-- Background Letter -->
-            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:220px;font-weight:bold;color:#eee;user-select:none;pointer-events:none;font-family:sans-serif;">
-                \${letter}
+            <div id="trace-bg-letter" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:220px;font-weight:bold;color:#eee;user-select:none;pointer-events:none;font-family:sans-serif;">
+                ${letter}
             </div>
             <!-- Drawing Canvas on top -->
             <canvas id="trace-canvas" width="300" height="350" style="position:absolute;inset:0;cursor:crosshair;"></canvas>
@@ -1376,7 +1380,20 @@ const activities = {
       };
 
       container.querySelector('#finish-trace').onclick = () => {
-        showStars(container, 3);
+        currentCharIndex++;
+        if (currentCharIndex < targetChars.length) {
+          // Next letter
+          letter = targetChars[currentCharIndex];
+          container.querySelector('#trace-instruction').innerHTML = `Follow the shape of the letter <strong>${letter}</strong>!`;
+          container.querySelector('#trace-bg-letter').textContent = letter;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          if (window.AudioFX) window.AudioFX.success();
+          feedback(container, 'Great job! Next letter...', 'var(--secondary)');
+        } else {
+          // Finished
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          showStars(container, 3);
+        }
       };
 
       attachGuardian(container, 'sculptor');
