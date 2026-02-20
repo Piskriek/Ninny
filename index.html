@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Little Bloom Academy</title>
+    <meta name="description" content="A 5-day learning app for Grade R, built for kids and their guardians.">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+
+        <!-- ── Sidebar ── -->
+        <aside class="sidebar">
+            <div class="logo" id="logo-btn" aria-label="Open Parent Gate">
+                <h1>🌸 Little Bloom</h1>
+            </div>
+
+            <!-- Day tabs: Mon → Fri -->
+            <div class="day-tabs">
+                <div class="day-tab" data-day="monday">Mon</div>
+                <div class="day-tab" data-day="tuesday">Tue</div>
+                <div class="day-tab" data-day="wednesday">Wed</div>
+                <div class="day-tab" data-day="thursday">Thu</div>
+                <div class="day-tab" data-day="friday">Fri</div>
+            </div>
+
+            <!-- Activity nav -->
+            <nav>
+                <div class="nav-item active" data-activity="weather">
+                    <span class="activity-icon">📺</span>
+                    <div>
+                        <span class="time-label">09:00 – 09:30</span>
+                        <span class="activity-name">Weather Reporter</span>
+                    </div>
+                </div>
+                <div class="nav-item" data-activity="sculptor">
+                    <span class="activity-icon">🏺</span>
+                    <div>
+                        <span class="time-label">09:30 – 10:15</span>
+                        <span class="activity-name">Master Sculptor</span>
+                    </div>
+                </div>
+                <div class="nav-item" data-activity="obstacle">
+                    <span class="activity-icon">🛣️</span>
+                    <div>
+                        <span class="time-label">10:45 – 11:45</span>
+                        <span class="activity-name">Obstacle Course</span>
+                    </div>
+                </div>
+                <div class="nav-item" data-activity="scavenger">
+                    <span class="activity-icon">🔎</span>
+                    <div>
+                        <span class="time-label">11:45 – 12:15</span>
+                        <span class="activity-name">Scavenger Hunt</span>
+                    </div>
+                </div>
+                <div class="nav-item" data-activity="charades">
+                    <span class="activity-icon">🦁</span>
+                    <div>
+                        <span class="time-label">14:00 – 14:45</span>
+                        <span class="activity-name">Animal Charades</span>
+                    </div>
+                </div>
+                <div class="nav-item" data-activity="suitcase">
+                    <span class="activity-icon">🧳</span>
+                    <div>
+                        <span class="time-label">14:45 – 15:00</span>
+                        <span class="activity-name">Memory Suitcase</span>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="caretaker-note">
+                <p>🔒 Tap the logo to unlock parent mode &amp; view progress 📊</p>
+            </div>
+        </aside>
+
+        <!-- ── Main ── -->
+        <main class="main-content">
+            <!-- Day banner strip -->
+            <div id="day-banner" class="day-banner">
+                <!-- filled by app.js -->
+            </div>
+
+            <!-- Game area -->
+            <div id="game-container" class="card bounce-in">
+                <!-- rendered by JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Load order: data → progress → games → app -->
+    <script src="data.js"></script>
+    <script src="progress.js"></script>
+    <script src="games.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
