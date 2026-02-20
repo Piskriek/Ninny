@@ -4,7 +4,8 @@
 
 // ── DOM refs ──────────────────────────────────────────────
 const gameContainer = document.getElementById('game-container');
-const navItems = document.querySelectorAll('.nav-item');
+const activityNav = document.getElementById('activity-nav');
+let navItems = [];
 const dayTabs = document.querySelectorAll('.day-tab');
 const dayBanner = document.getElementById('day-banner');
 const weekLabel = document.getElementById('week-label');
@@ -89,7 +90,81 @@ function applyWeekTheme() {
 
     // Highlight active day tab
     dayTabs.forEach(t => t.classList.toggle('active-day', t.dataset.day === selectedDay));
+
+    // Build dynamic daily schedule
+    buildDailySchedule();
 }
+
+// ── Dynamic Schedule Engine ───────────────────────────────
+function buildDailySchedule() {
+    // We want a predictable random sequence based on the day
+    const dayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+    const dayIndex = dayKeys.indexOf(selectedDay) + 1;
+    const seed = currentWeekNum * 100 + dayIndex;
+
+    // Simple seeded random function
+    function seededRandom(max, s) {
+        let x = Math.sin(s++) * 10000;
+        return Math.floor((x - Math.floor(x)) * max);
+    }
+
+    const available = ['sculptor', 'obstacle', 'scavenger', 'charades', 'music', 'math', 'yoga', 'color', 'shape', 'story'];
+    const selected = [];
+
+    // Pick 4 unique activities using the seed
+    let currentSeed = seed;
+    while (selected.length < 4) {
+        const idx = seededRandom(available.length, currentSeed++);
+        const item = available[idx];
+        if (!selected.includes(item)) {
+            selected.push(item);
+        }
+    }
+
+    // Always start with weather, end with suitcase
+    const dailyActivities = ['weather', ...selected, 'suitcase'];
+
+    const activityMeta = {
+        'weather': { icon: '📺', name: 'Weather Reporter', time: '09:00 – 09:30' },
+        'sculptor': { icon: '🏺', name: 'Master Sculptor', time: '09:30 – 10:15' },
+        'obstacle': { icon: '🛣️', name: 'Obstacle Course', time: '10:45 – 11:45' },
+        'scavenger': { icon: '🔎', name: 'Scavenger Hunt', time: '11:45 – 12:15' },
+        'charades': { icon: '🦁', name: 'Animal Charades', time: '12:15 – 13:00' },
+        'music': { icon: '🥁', name: 'Rhythm Maker', time: '09:30 – 10:15' },
+        'math': { icon: '🔢', name: 'Number Ninja', time: '10:45 – 11:45' },
+        'yoga': { icon: '🧘‍♀️', name: 'Zen Animal Poses', time: '11:45 – 12:15' },
+        'color': { icon: '🎨', name: 'Color Splash', time: '12:15 – 13:00' },
+        'shape': { icon: '🔺', name: 'Shape Sorter', time: '14:00 – 14:45' },
+        'story': { icon: '📖', name: 'Story Spinner', time: '14:00 – 14:45' },
+        'suitcase': { icon: '🧳', name: 'Memory Suitcase', time: '14:45 – 15:00' }
+    };
+
+    activityNav.innerHTML = '';
+
+    dailyActivities.forEach((act, i) => {
+        const meta = activityMeta[act];
+        // Distribute times roughly linearly
+        const times = ['09:00 – 09:30', '09:30 – 10:15', '10:45 – 11:45', '11:45 – 12:30', '13:30 – 14:15', '14:45 – 15:00'];
+        const timeLabel = times[i];
+
+        const div = document.createElement('div');
+        div.className = 'nav-item';
+        if (act === currentActivity) div.classList.add('active');
+        div.dataset.activity = act;
+        div.innerHTML = `
+            <span class="activity-icon">${meta.icon}</span>
+            <div>
+                <span class="time-label">${timeLabel}</span>
+                <span class="activity-name">${meta.name}</span>
+            </div>
+        `;
+        div.addEventListener('click', () => loadActivity(act));
+        activityNav.appendChild(div);
+    });
+
+    navItems = document.querySelectorAll('.nav-item');
+}
+
 
 // ── Day tab events ────────────────────────────────────────
 dayTabs.forEach(tab => {
@@ -120,7 +195,7 @@ function loadActivity(id) {
     gameContainer.style.transform = 'scale(0.95)';
 
     setTimeout(() => {
-        if (activities[id]) {
+        if (typeof activities !== 'undefined' && activities[id]) {
             activities[id].render(gameContainer);
         } else {
             gameContainer.innerHTML = `<h2 class="game-title">Coming soon! 🌸</h2>`;
@@ -129,10 +204,6 @@ function loadActivity(id) {
         gameContainer.style.transform = 'scale(1)';
     }, 175);
 }
-
-navItems.forEach(item => {
-    item.addEventListener('click', () => loadActivity(item.dataset.activity));
-});
 
 // ── Parent Gate ───────────────────────────────────────────
 function showParentGate() {

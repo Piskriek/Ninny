@@ -16,14 +16,41 @@ function feedback(container, msg, color = 'var(--primary)') {
   setTimeout(() => { if (el) el.style.transform = 'scale(1)'; }, 250);
 }
 
+function partyTime(container, maxHearts = 15) {
+  const emojis = ['🎈', '⭐', '✨', '🎉', '💖', '🌸'];
+  for (let i = 0; i < maxHearts; i++) {
+    const el = document.createElement('div');
+    el.className = 'particle';
+    el.textContent = pick(emojis);
+    const originX = 50 + (Math.random() * 20 - 10);
+    const originY = 80 + (Math.random() * 10 - 5);
+
+    const tx = (Math.random() * 400 - 200) + 'px';
+    const ty = (Math.random() * -500 - 100) + 'px';
+    const rot = (Math.random() * 360) + 'deg';
+
+    el.style.cssText = `
+      left: ${originX}%; 
+      top: ${originY}%; 
+      font-size: ${1 + Math.random() * 1.5}rem;
+      --tx: ${tx};
+      --ty: ${ty};
+      --rot: ${rot};
+    `;
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 800);
+  }
+}
+
 function showStars(container, n = 3) {
   for (let i = 0; i < n; i++) {
     const star = document.createElement('div');
     star.textContent = '⭐';
-    star.style.cssText = `position:absolute;font-size:2.5rem;left:${15 + Math.random() * 70}%;top:${10 + Math.random() * 60}%;animation:floatUp 1.5s ease forwards;pointer-events:none;z-index:999;`;
+    star.style.cssText = `position:absolute;font-size:2.8rem;left:${15 + Math.random() * 70}%;top:${20 + Math.random() * 50}%;animation:floatUp 1.5s ease forwards;pointer-events:none;z-index:999;`;
     container.appendChild(star);
     setTimeout(() => star.remove(), 1500);
   }
+  if (n >= 2) partyTime(container, n * 4);
   recordProgress('star', n);
 }
 
@@ -715,4 +742,331 @@ const activities = {
       renderPack();
     }
   },
-};
+  // ── RHYTHM MAKER (Music) ──────────────────────────────────
+  music: {
+    render(container) {
+      const dayData = getCurrentDayData();
+      recordProgress('activity', 'Rhythm Maker');
+
+      let roundNo = 1;
+      const totalRounds = 3;
+
+      const renderRound = () => {
+        if (roundNo > totalRounds) {
+          container.innerHTML = `
+            <div style="text-align:center;font-size:1.8rem;padding:2rem;">
+              🎵 Amazing Rhythm! 🎵<br><br>
+              <span style="font-size:3rem;">🥁⭐🎸</span><br><br>
+              <button class="btn" id="restart-music">Play Again!</button>
+            </div>`;
+          container.querySelector('#restart-music').addEventListener('click', () => { roundNo = 1; renderRound(); });
+          return;
+        }
+
+        const rhymePool = dayData.activities?.charades?.rhymeSet || ["Twinkle Twinkle", "Baa Baa Black Sheep", "Old MacDonald"];
+        const rhyme = pick(rhymePool);
+        const claps = pick([2, 3, 4, 5]);
+
+        container.innerHTML = `
+          ${roundBadge(roundNo, totalRounds)}
+          <h2 class="game-title">Rhythm Maker 🥁</h2>
+          <div style="background:#fff3e0;border:3px dashed #ffb703;border-radius:20px;padding:2rem;margin:1.5rem;text-align:center;">
+            <div style="font-size:1.4rem;margin-bottom:1rem;color:#e65100;">Let's sing: <strong>${rhyme}</strong></div>
+            <div style="font-size:1.2rem;margin-bottom:1rem;color:#4a4a4a;">But first...</div>
+            <div style="font-size:2.5rem;margin-bottom:1rem;">👏 x ${claps}</div>
+            <p style="font-size:1.1rem;color:#888;">Clap your hands ${claps} times!</p>
+          </div>
+          <button class="btn" id="music-done" style="margin-top:1rem;">We did it! 🎶</button>
+          <!-- Using charades tips as a fallback for music -->
+          ${guardianBtn('charades')}
+        `;
+        container.querySelector('#music-done').addEventListener('click', () => {
+          feedback(container, 'Great timing! 🌟', '#f57c00');
+          showStars(container, 1);
+          setTimeout(() => { roundNo++; renderRound(); }, 1200);
+        });
+        attachGuardian(container, 'charades');
+      };
+
+      renderRound();
+    }
+  },
+
+  // ── NUMBER NINJA (Math) ──────────────────────────────────
+  math: {
+    render(container) {
+      const dayData = getCurrentDayData();
+      recordProgress('activity', 'Number Ninja');
+
+      let roundNo = 1;
+      const totalRounds = 4;
+      const maxNum = dayData.activities?.scavenger?.countMax || 5;
+
+      const renderRound = () => {
+        if (roundNo > totalRounds) {
+          container.innerHTML = `
+            <div style="text-align:center;font-size:1.8rem;padding:2rem;">
+              🥷 Number Ninja Master! 🥷<br><br>
+              <span style="font-size:3rem;">🔢⭐💯</span><br><br>
+              <button class="btn" id="restart-math">Count Again!</button>
+            </div>`;
+          container.querySelector('#restart-math').addEventListener('click', () => { roundNo = 1; renderRound(); });
+          return;
+        }
+
+        // Generate N random emojis to count
+        const numToCount = Math.floor(Math.random() * maxNum) + 1;
+        const emojiPool = ['🍎', '🎈', '⭐', '🍕', '🚗', '🚀', '🧸', '🐸', '🌻', '🎨'];
+        const e = pick(emojiPool);
+        const displayStr = Array(numToCount).fill(e).join(' ');
+
+        container.innerHTML = `
+          ${roundBadge(roundNo, totalRounds)}
+          <h2 class="game-title">Number Ninja 🔢</h2>
+          <div style="background:#e3f2fd;border:3px solid #1e88e5;border-radius:20px;padding:2rem;margin:1.5rem;text-align:center;">
+            <p style="font-size:1.3rem;margin-bottom:1.5rem;color:#1565c0;font-weight:bold;">How many ${e} are there?</p>
+            <div style="font-size:3.5rem;letter-spacing:10px;line-height:1.4;word-break:break-all;">${displayStr}</div>
+          </div>
+          <p style="font-size:1.1rem;color:#888;margin-bottom:1rem;">Point and count out loud! 🗣️</p>
+          <button class="btn" id="math-done" style="background:#1e88e5;color:white;">I counted! ➡️</button>
+          <!-- Using scavenger tips as a fallback for math -->
+          ${guardianBtn('scavenger')}
+        `;
+        container.querySelector('#math-done').addEventListener('click', () => {
+          feedback(container, 'Perfect counting! 🎯', '#1e88e5');
+          showStars(container, 1);
+          setTimeout(() => { roundNo++; renderRound(); }, 1200);
+        });
+        attachGuardian(container, 'scavenger');
+      };
+
+      renderRound();
+    }
+  },
+
+  // ── ZEN ANIMAL POSES (Yoga) ──────────────────────────────
+  yoga: {
+    render(container) {
+      const dayData = getCurrentDayData();
+      recordProgress('activity', 'Zen Animal Poses');
+
+      let roundNo = 1;
+      const totalRounds = 3;
+      const animals = dayData.activities?.charades?.animalSet || ['Cat', 'Dog', 'Lion', 'Bird'];
+
+      const renderRound = () => {
+        if (roundNo > totalRounds) {
+          container.innerHTML = `
+            <div style="text-align:center;font-size:1.8rem;padding:2rem;">
+              🧘‍♀️ So Zen! 🧘‍♂️<br><br>
+              <span style="font-size:3rem;">🍃⭐🌸</span><br><br>
+              <button class="btn" id="restart-yoga">Stretch Again!</button>
+            </div>`;
+          container.querySelector('#restart-yoga').addEventListener('click', () => { roundNo = 1; renderRound(); });
+          return;
+        }
+
+        const animal = pick(animals);
+        const holdTime = pick([5, 8, 10]);
+
+        container.innerHTML = `
+          ${roundBadge(roundNo, totalRounds)}
+          <h2 class="game-title">Zen Animal Poses 🧘</h2>
+          <div style="background:#e8f5e9;border:3px solid #4caf50;border-radius:20px;padding:2rem;margin:1.5rem;text-align:center;">
+            <p style="font-size:1.3rem;margin-bottom:1.5rem;color:#2e7d32;font-weight:bold;">Be as still as a...</p>
+            <div style="font-size:3rem;margin-bottom:1rem;color:var(--primary);font-weight:800;text-transform:uppercase;">${animal}!</div>
+            <p style="font-size:1.2rem;color:#4a4a4a;">Hold the pose for <strong>${holdTime} seconds</strong> while breathing deeply.</p>
+          </div>
+          <button class="btn" id="yoga-done" style="background:#4caf50;color:white;">I stayed still! 🍃</button>
+          <!-- Using charades tips -->
+          ${guardianBtn('charades')}
+        `;
+        container.querySelector('#yoga-done').addEventListener('click', () => {
+          feedback(container, 'So peaceful! 🌸', '#4caf50');
+          showStars(container, 2);
+          setTimeout(() => { roundNo++; renderRound(); }, 1500);
+        });
+        attachGuardian(container, 'charades');
+      };
+
+      renderRound();
+    }
+  },
+
+  // ── COLOR SPLASH (Color identification) ──────────────────
+  color: {
+    render(container) {
+      const dayData = getCurrentDayData();
+      recordProgress('activity', 'Color Splash');
+
+      let roundNo = 1;
+      const totalRounds = 4;
+      const colourFocus = dayData.activities?.sculptor?.colourFocus || ['Red', 'Blue', 'Yellow', 'Green'];
+
+      // Simple map to hex for UI pop
+      const colorMap = {
+        'Red': '#f44336', 'Blue': '#2196f3', 'Yellow': '#ffeb3b', 'Green': '#4caf50',
+        'Orange': '#ff9800', 'Purple': '#9c27b0', 'Black': '#212121', 'White': '#f5f5f5',
+        'Brown': '#795548', 'Pink': '#e91e63', 'Silver': '#9e9e9e', 'Gold': '#ffc107',
+        'Any': '#c77dff', 'All': '#c77dff'
+      };
+
+      const renderRound = () => {
+        if (roundNo > totalRounds) {
+          container.innerHTML = `
+            <div style="text-align:center;font-size:1.8rem;padding:2rem;">
+              🎨 Rainbow Master! 🎨<br><br>
+              <span style="font-size:3rem;">🌈⭐🎨</span><br><br>
+              <button class="btn" id="restart-color">Splash Again!</button>
+            </div>`;
+          container.querySelector('#restart-color').addEventListener('click', () => { roundNo = 1; renderRound(); });
+          return;
+        }
+
+        let c = pick(colourFocus);
+        // Fallback for generic "Any colours" strings
+        if (c.toLowerCase().includes('any') || c.toLowerCase().includes('all')) c = 'Red';
+
+        const hex = colorMap[c] || '#ff85a2';
+        const isLight = (c === 'Yellow' || c === 'White');
+        const textCol = isLight ? '#333' : '#fff';
+
+        container.innerHTML = `
+          ${roundBadge(roundNo, totalRounds)}
+          <h2 class="game-title">Color Splash 🎨</h2>
+          <div style="background:${hex};border-radius:20px;padding:3rem 2rem;margin:1.5rem;text-align:center;box-shadow:0 8px 24px ${hex}66;">
+            <p style="font-size:1.4rem;margin-bottom:1rem;color:${textCol};font-weight:bold;text-shadow:${isLight ? 'none' : '0 2px 4px rgba(0,0,0,0.3)'};">Find something in the room that is...</p>
+            <div style="font-size:3.5rem;color:${textCol};font-weight:800;text-transform:uppercase;text-shadow:${isLight ? 'none' : '0 2px 4px rgba(0,0,0,0.3)'};">${c}!</div>
+          </div>
+          <p style="font-size:1.1rem;color:#888;margin-bottom:1rem;">Run and touch it! 🏃‍♀️</p>
+          <button class="btn" id="color-done" style="background:${hex};color:${textCol};border:2px solid ${isLight ? '#ccc' : hex};">Found it! ➡️</button>
+          <!-- Using sculptor tips as fallback -->
+          ${guardianBtn('sculptor')}
+        `;
+        container.querySelector('#color-done').addEventListener('click', () => {
+          feedback(container, 'Great spotting! 👀', hex);
+          showStars(container, 1);
+          setTimeout(() => { roundNo++; renderRound(); }, 1200);
+        });
+        attachGuardian(container, 'sculptor');
+      };
+
+      renderRound();
+    }
+  },
+
+  // ── SHAPE SORTER (Shape identification) ──────────────────
+  shape: {
+    render(container) {
+      const dayData = getCurrentDayData();
+      recordProgress('activity', 'Shape Sorter');
+
+      let roundNo = 1;
+      const totalRounds = 4;
+      const shapeFocus = dayData.activities?.sculptor?.shapeFocus || ['Circle', 'Square', 'Triangle'];
+
+      const renderRound = () => {
+        if (roundNo > totalRounds) {
+          container.innerHTML = `
+            <div style="text-align:center;font-size:1.8rem;padding:2rem;">
+              🔺 Shape Genius! 🟦<br><br>
+              <span style="font-size:3rem;">⭕⭐🟥</span><br><br>
+              <button class="btn" id="restart-shape">Sort Again!</button>
+            </div>`;
+          container.querySelector('#restart-shape').addEventListener('click', () => { roundNo = 1; renderRound(); });
+          return;
+        }
+
+        let s = pick(shapeFocus);
+        if (s.toLowerCase().includes('all') || s.toLowerCase().includes('any')) s = 'Circle';
+
+        // CSS shapes
+        let shapeHtml = '';
+        if (s === 'Circle' || s === 'Oval') {
+          shapeHtml = `<div style="width:120px;height:${s === 'Oval' ? '80px' : '120px'};background:#ff9f1c;border-radius:50%;margin:0 auto;"></div>`;
+        } else if (s === 'Square' || s === 'Rectangle') {
+          shapeHtml = `<div style="width:120px;height:${s === 'Rectangle' ? '80px' : '120px'};background:#2ec4b6;margin:0 auto;"></div>`;
+        } else if (s === 'Triangle') {
+          shapeHtml = `<div style="width:0;height:0;border-left:70px solid transparent;border-right:70px solid transparent;border-bottom:120px solid #e71d36;margin:0 auto;"></div>`;
+        } else {
+          shapeHtml = `<div style="font-size:6rem;">⭐</div>`; // fallback for star/diamond
+        }
+
+        container.innerHTML = `
+          ${roundBadge(roundNo, totalRounds)}
+          <h2 class="game-title">Shape Sorter 🔺</h2>
+          <div style="background:#f8f9fa;border:3px dashed #ced4da;border-radius:20px;padding:2rem;margin:1.5rem;text-align:center;">
+            <div style="margin-bottom:2rem;">${shapeHtml}</div>
+            <p style="font-size:1.3rem;color:#495057;font-weight:bold;">What shape is this?</p>
+            <div style="font-size:2.5rem;color:var(--primary);font-weight:800;margin-top:0.5rem;text-transform:uppercase;">${s}</div>
+          </div>
+          <p style="font-size:1.1rem;color:#888;margin-bottom:1rem;">Say it out loud! 🗣️</p>
+          <button class="btn" id="shape-done">I said it! ➡️</button>
+          ${guardianBtn('sculptor')}
+        `;
+        container.querySelector('#shape-done').addEventListener('click', () => {
+          feedback(container, 'You know your shapes! 📐', 'var(--primary)');
+          showStars(container, 1);
+          setTimeout(() => { roundNo++; renderRound(); }, 1200);
+        });
+        attachGuardian(container, 'sculptor');
+      };
+
+      renderRound();
+    }
+  },
+
+  // ── STORY SPINNER (Storytelling) ─────────────────────────
+  story: {
+    render(container) {
+      const dayData = getCurrentDayData();
+      recordProgress('activity', 'Story Spinner');
+
+      let roundNo = 1;
+      const totalRounds = 3;
+      const theme = dayData.theme || 'Something magical';
+
+      const renderRound = () => {
+        if (roundNo > totalRounds) {
+          container.innerHTML = `
+            <div style="text-align:center;font-size:1.8rem;padding:2rem;">
+              📖 Master Storyteller! 📖<br><br>
+              <span style="font-size:3rem;">✨⭐📚</span><br><br>
+              <button class="btn" id="restart-story">Tell Another!</button>
+            </div>`;
+          container.querySelector('#restart-story').addEventListener('click', () => { roundNo = 1; renderRound(); });
+          return;
+        }
+
+        const prompts = [
+          `Tell a tiny story about <strong>${theme}</strong>...`,
+          `What is your favourite thing about <strong>${theme}</strong>?`,
+          `Imagine you are inside a book about <strong>${theme}</strong>. What happens?`
+        ];
+        const prompt = prompts[roundNo - 1];
+
+        container.innerHTML = `
+          ${roundBadge(roundNo, totalRounds)}
+          <h2 class="game-title">Story Spinner 📖</h2>
+          <div style="background:#f3e5f5;border:3px solid #ab47bc;border-radius:20px;padding:2rem;margin:1.5rem;text-align:center;">
+            <span style="font-size:3rem;display:block;margin-bottom:1rem;">✨</span>
+            <p style="font-size:1.4rem;color:#6a1b9a;line-height:1.4;">${prompt}</p>
+          </div>
+          <p style="font-size:1.1rem;color:#888;margin-bottom:1rem;">Tell your grown-up your answer! 🗣️</p>
+          <button class="btn" id="story-done" style="background:#ab47bc;color:white;">I told them! ➡️</button>
+          <!-- Using suitcase reflection tips as fallback -->
+          ${guardianBtn('suitcase')}
+        `;
+        container.querySelector('#story-done').addEventListener('click', () => {
+          feedback(container, 'What a great imagination! 🌟', '#ab47bc');
+          showStars(container, 2);
+          setTimeout(() => { roundNo++; renderRound(); }, 1500);
+        });
+        attachGuardian(container, 'suitcase');
+      };
+
+      renderRound();
+    }
+  }
+
+}; // <-- End of activities object (do not replace this line, we inject before it)
