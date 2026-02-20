@@ -2,21 +2,22 @@
 
 Your Little Bloom Academy (Ninny) app is now built as a completely self-contained web application with zero external dependencies, making it perfect for tablet usage!
 
-## Option 1: The "Add to Home Screen" Method (Recommended)
-This is the fastest method and makes the game look exactly like a native tablet app (fullscreen, no browser URL bar).
+## Option 1: The PWA "Install App" Method (Highly Recommended 🌟)
+The project has now been upgraded to a **Progressive Web App (PWA)**. This means it has a secure offline Service Worker, an app manifest, and a custom icon. When installed this way, it behaves **exactly** like a native app (it works offline automatically, has its own app icon, and opens in full-screen without a browser URL bar).
 
 **On your Desktop/Laptop:**
 1. Open your terminal in the `c:\Work\Ninny` folder.
 2. Run a local web server: `python -m http.server 8000`
 3. Find your computer's local IP address (e.g., `192.168.1.5`). You can find this by running `ipconfig` in your command prompt and looking for the IPv4 Address.
 
-**On the Tablet (iPad or Android):**
+**On the Tablet (Android/Samsung Tablet):**
 1. Make sure you are connected to the same Wi-Fi network as the computer.
-2. Open Safari (iPad) or Chrome (Android).
+2. Open Chrome or Samsung Internet.
 3. Type the address into the browser: `http://192.168.1.5:8000` (replace with your actual IP address).
 4. The game will load!
-5. **CRITICAL STEP:** Tap the **Share** button (iPad) or menu button (Android) and select **"Add to Home Screen"**.
-6. This creates an app icon on the tablet's home screen. When launched from this icon, it will open in fullscreen mode without the browser UI.
+5. **CRITICAL STEP:** Depending on your browser, you might see a pop-up saying **"Add Little Bloom Academy to Home screen"**. Tap it! If you don't see the pop-up, tap the 3-dot menu icon in the top right of Chrome and select **"Install app"** or **"Add to Home screen"**.
+6. This installs a native-feeling app on the tablet's home screen with the yellow flower icon. 
+7. You can now close the browser, tap the new app icon, and play the game entirely full-screen. **Because of the new Service Worker, you can even disconnect from Wi-Fi and it will still work perfectly offline!**
 
 ## Option 2: Full Offline Transfer
 If the tablet lacks a persistent Wi-Fi connection to your local network, you can copy the files locally to the device:

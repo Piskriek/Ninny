@@ -7,6 +7,8 @@
     <title>Little Bloom Academy</title>
     <meta name="description"
         content="A 26-week Grade R learning programme for kids and their guardians — Little Bloom Academy.">
+    <meta name="theme-color" content="#ffb703">
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -64,6 +66,19 @@
     <script src="progress.js"></script>
     <script src="games.js"></script>
     <script src="app.js"></script>
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then((registration) => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, (err) => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
 </body>
 
 </html>
