@@ -7,8 +7,9 @@ const gameContainer = document.getElementById('game-container');
 const navItems = document.querySelectorAll('.nav-item');
 const dayTabs = document.querySelectorAll('.day-tab');
 const dayBanner = document.getElementById('day-banner');
+const weekLabel = document.getElementById('week-label');
 
-// ── Star animation style ──────────────────────────────────
+// ── Star float animation ───────────────────────────────────
 const floatStyle = document.createElement('style');
 floatStyle.textContent = `
   @keyframes floatUp {
@@ -22,41 +23,87 @@ document.head.appendChild(floatStyle);
 const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 
 let selectedDay = (() => {
-    const dow = new Date().getDay(); // 0=Sun, 6=Sat
+    const dow = new Date().getDay();
     if (dow >= 1 && dow <= 5) return DAY_KEYS[dow - 1];
-    return 'monday'; // Weekend fallback
+    return 'monday';
 })();
+window.selectedDay = selectedDay;
 
-function applyDayTheme(dayKey) {
-    const d = WEEKLY[dayKey];
-    if (!d) return;
 
-    // Update accent colour CSS variable
-    document.documentElement.style.setProperty('--accent', d.accentColor);
+// ── Week selection ────────────────────────────────────────
+const TOTAL_WEEKS = 26;
 
-    // Update banner
-    dayBanner.innerHTML = `
-    <span>${d.emoji}</span>
-    <div>
-      <strong>${d.day}</strong> — ${d.theme}
-      <span style="font-size:0.8rem;opacity:0.7;display:block;">${d.tagline}</span>
-    </div>
-    <span style="margin-left:auto;font-size:0.85rem;opacity:0.6;">Focus: ${d.focusLetters.join(' ')}</span>
-  `;
-
-    // Highlight active tab
-    dayTabs.forEach(t => {
-        t.classList.toggle('active-day', t.dataset.day === dayKey);
-    });
+// Auto-calculate current week from a start date stored in localStorage
+function calcCurrentWeek() {
+    const stored = localStorage.getItem('ninny_week');
+    if (stored) return parseInt(stored, 10);
+    // Default: calculate from a stored start date
+    const startKey = 'ninny_start_date';
+    let start = localStorage.getItem(startKey);
+    if (!start) {
+        // Set start date to the most recent Monday
+        const today = new Date();
+        const day = today.getDay();
+        const diff = (day === 0) ? -6 : 1 - day;
+        today.setDate(today.getDate() + diff);
+        start = today.toISOString().split('T')[0];
+        localStorage.setItem(startKey, start);
+    }
+    const startDate = new Date(start);
+    const now = new Date();
+    const weekNum = Math.floor((now - startDate) / (7 * 24 * 60 * 60 * 1000)) + 1;
+    return Math.max(1, Math.min(weekNum, TOTAL_WEEKS));
 }
 
+let currentWeekNum = calcCurrentWeek();
+window.currentWeekNum = currentWeekNum; // expose for games.js
+
+function setWeek(n) {
+    currentWeekNum = Math.max(1, Math.min(n, TOTAL_WEEKS));
+    window.currentWeekNum = currentWeekNum;
+    localStorage.setItem('ninny_week', currentWeekNum);
+    applyWeekTheme();
+    loadActivity(currentActivity || 'weather');
+}
+
+function applyWeekTheme() {
+    const wk = getCurriculumWeek(currentWeekNum);
+    if (!wk) return;
+
+    // Accent colour from curriculum week
+    document.documentElement.style.setProperty('--accent', wk.accent);
+
+    // Banner: week info + day label
+    const dayLabel = wk.days[selectedDay] || '';
+    dayBanner.innerHTML = `
+    <span>${wk.emoji}</span>
+    <div>
+      <strong>Week ${wk.week}: ${wk.theme}</strong>
+      <span style="font-size:0.78rem;opacity:0.75;display:block;">${dayLabel} &nbsp;|&nbsp; Letters: ${wk.activities.scavenger.letters.join(', ')}</span>
+    </div>
+    <span style="margin-left:auto;font-size:0.82rem;opacity:0.6;">${currentWeekNum} / ${TOTAL_WEEKS}</span>
+  `;
+
+    // Week navigator label
+    if (weekLabel) weekLabel.textContent = `Week ${currentWeekNum}`;
+
+    // Highlight active day tab
+    dayTabs.forEach(t => t.classList.toggle('active-day', t.dataset.day === selectedDay));
+}
+
+// ── Day tab events ────────────────────────────────────────
 dayTabs.forEach(tab => {
     tab.addEventListener('click', () => {
         selectedDay = tab.dataset.day;
-        applyDayTheme(selectedDay);
+        window.selectedDay = selectedDay;
+        applyWeekTheme();
         loadActivity(currentActivity || 'weather');
     });
 });
+
+// ── Week navigator buttons ────────────────────────────────
+document.getElementById('prev-week').addEventListener('click', () => setWeek(currentWeekNum - 1));
+document.getElementById('next-week').addEventListener('click', () => setWeek(currentWeekNum + 1));
 
 // ── Activity loading ──────────────────────────────────────
 let currentActivity = 'weather';
@@ -120,5 +167,5 @@ function showParentGate() {
 document.querySelector('.logo').addEventListener('click', showParentGate);
 
 // ── Boot ──────────────────────────────────────────────────
-applyDayTheme(selectedDay);
+applyWeekTheme();
 loadActivity('weather');

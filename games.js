@@ -55,12 +55,22 @@ function showGuardianOverlay(actKey) {
   document.getElementById('close-guardian').addEventListener('click', () => overlay.remove());
 }
 
-// ── Get the current day's theme data ─────────────────────
+// ── Get the current week's curriculum data ────────────────
 function getCurrentDayData() {
-  const keys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  const todayKey = keys[new Date().getDay()];
-  return WEEKLY[todayKey] || WEEKLY['monday']; // fallback to Monday if weekend
+  const weekNum = (window.currentWeekNum) || 1;
+  const wk = getCurriculumWeek(weekNum);
+  const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const selectedDay = (window.selectedDay) || dayKeys[new Date().getDay()] || 'monday';
+  return {
+    day: selectedDay.charAt(0).toUpperCase() + selectedDay.slice(1),
+    emoji: wk.emoji,
+    theme: wk.theme,
+    accentColor: wk.accent,
+    activities: wk.activities,
+    guardianTips: wk.guardianTips,
+  };
 }
+
 
 // ── Attach guardian listener helper ───────────────────────
 function attachGuardian(container, key) {
