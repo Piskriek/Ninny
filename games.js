@@ -87,8 +87,20 @@ function guardianBtn(actKey) {
 
 function showGuardianOverlay(actKey) {
   const dayData = getCurrentDayData();
-  const raw = dayData.guardianTips[actKey];
-  if (!raw) return;
+  let raw = dayData.guardianTips ? dayData.guardianTips[actKey] : null;
+
+  // Generic fallback if no daily tip exists for this minigame
+  if (!raw) {
+    raw = {
+      intro: "This activity is great for practicing focus and playing together. Have fun!",
+      steps: [
+        "Play alongside them and take turns.",
+        "Ask them to describe what they are doing out loud.",
+        "Celebrate their correct answers enthusiastically!"
+      ],
+      extend: "Try creating a physical version of this game using household objects."
+    };
+  }
 
   const overlay = document.createElement('div');
   overlay.className = 'guardian-overlay bounce-in';
@@ -1220,7 +1232,7 @@ const activities = {
         const style = document.createElement('style');
         style.id = 'match-css';
         style.textContent = `
-            .match-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; max-width:500px; margin:0 auto 2rem auto; perspective:1000px; }
+            .match-grid { display:grid; grid-template-columns:repeat(4, 1fr); column-gap:3rem; row-gap:8rem; padding: 2rem; max-width:800px; margin:0 auto 4rem auto; perspective:1000px; }
             .match-card { width:100%; aspect-ratio:1/1; position:relative; cursor:pointer; transform-style:preserve-3d; transition:transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1); border-radius:16px; box-shadow:0 6px 16px rgba(0,0,0,0.1); }
             .match-card.flipped { transform:rotateY(180deg); }
             .match-card-face { position:absolute; inset:0; backface-visibility:hidden; display:flex; align-items:center; justify-content:center; border-radius:16px; font-size:3rem; }
@@ -1250,7 +1262,7 @@ const activities = {
         card.dataset.val = item;
         card.innerHTML = `
               <div class="match-card-face match-card-front">❓</div>
-              <div class="match-card-face match-card-back">\${item}</div>
+              <div class="match-card-face match-card-back">${item}</div>
           `;
 
         card.addEventListener('click', () => {
@@ -1536,6 +1548,349 @@ const activities = {
         });
       };
       renderNext();
+    }
+  },
+
+  // 19. ODD ONE OUT (Visual Discrimination) replaces Simon Says
+  oddOne: {
+    render(container) {
+      recordProgress('activity', 'Odd One Out');
+      container.innerHTML = `
+        <h2 class="game-title">Odd One Out 🕵️‍♂️</h2>
+        <p style="text-align:center;font-size:1.1rem;color:#888;margin-bottom:2rem;">Tap the picture that is different!</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;max-width:400px;margin:0 auto;" id="odd-grid">
+           <!-- Items injected here -->
+        </div>
+        <div id="feedback" style="text-align:center;font-size:1.4rem;font-weight:bold;height:3rem;display:flex;align-items:center;justify-content:center;color:var(--primary);margin-top:2rem;">
+            Round 1 / 3
+        </div>
+        ${guardianBtn('scavenger')}
+      `;
+
+      let round = 1;
+      const totalRounds = 3;
+      const grid = container.querySelector('#odd-grid');
+      const feedbackEl = container.querySelector('#feedback');
+
+      const pairs = [
+        { main: '🍎', odd: '🍅' },
+        { main: '🐶', odd: '🦊' },
+        { main: '🚗', odd: '🚙' },
+        { main: '🌻', odd: '🌞' },
+        { main: '⚽', odd: '🏀' },
+        { main: '🟦', odd: '🟪' }
+      ];
+
+      const pool = [...pairs].sort(() => Math.random() - 0.5);
+
+      const renderRound = () => {
+        grid.innerHTML = '';
+        feedbackEl.textContent = `Round ${round} / ${totalRounds}`;
+
+        const currentPair = pool[round - 1];
+        const items = [currentPair.main, currentPair.main, currentPair.main, currentPair.odd];
+        items.sort(() => Math.random() - 0.5);
+
+        items.forEach(emoji => {
+          const card = document.createElement('div');
+          card.style.cssText = `aspect-ratio:1; border-radius:32px; background:#fff; box-shadow:0 8px 16px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center; font-size:5rem; cursor:pointer; transition:transform 0.2s, background 0.2s; border:4px solid #eee;`;
+          card.textContent = emoji;
+
+          card.addEventListener('click', () => {
+            if (card.style.transform.includes('scale')) return;
+
+            if (emoji === currentPair.odd) {
+              if (window.AudioFX) window.AudioFX.success();
+              card.style.background = '#e8f5e9';
+              card.style.borderColor = '#4CAF50';
+              card.style.transform = 'scale(1.1)';
+              feedback(container, 'Great eye! 👀', 'var(--success)');
+
+              setTimeout(() => {
+                if (round >= totalRounds) {
+                  feedback(container, 'Detective Master! 🏆', 'var(--accent)');
+                  showStars(container, 3);
+                } else {
+                  round++;
+                  renderRound();
+                }
+              }, 1000);
+            } else {
+              if (window.AudioFX) window.AudioFX.error();
+              card.style.background = '#ffebee';
+              card.style.borderColor = '#f44336';
+              card.style.transform = 'translateX(10px)';
+              setTimeout(() => card.style.transform = 'translateX(-10px)', 100);
+              setTimeout(() => card.style.transform = 'translateX(0)', 200);
+              feedback(container, 'Oops! Find the DIFFERENT one.', '#f44336');
+            }
+          });
+
+          grid.appendChild(card);
+        });
+      };
+
+      renderRound();
+      attachGuardian(container, 'scavenger');
+    }
+  },
+
+  // 20. SHADOW MATCH (Drag & Drop replacement using Click to select because tablet D&D is complex without pointer events)
+  shadow: {
+    render(container) {
+      recordProgress('activity', 'Shadow Match');
+      container.innerHTML = `
+        <h2 class="game-title">Shadow Match 🌚</h2>
+        <p style="text-align:center;font-size:1.1rem;color:#888;">Match the picture to its shadow!</p>
+        
+        <div style="display:flex;justify-content:center;gap:2rem;margin:1.5rem 0;" id="shadow-row">
+            <!-- Shadows -->
+        </div>
+        <div style="display:flex;justify-content:center;gap:2rem;margin:2rem 0;" id="item-row">
+            <!-- Items -->
+        </div>
+        <div id="feedback" style="text-align:center;font-size:1.4rem;font-weight:bold;height:2rem;color:var(--primary);">Tap an item, then tap its shadow!</div>
+        ${guardianBtn('shadow')}
+        `;
+
+      // Select 3 random animal emojis
+      const animals = [
+        { emoji: '🐘', id: 0 }, { emoji: '🦒', id: 1 }, { emoji: '🦓', id: 2 },
+        { emoji: '🦏', id: 3 }, { emoji: '🐊', id: 4 }, { emoji: '🐆', id: 5 }
+      ];
+      const targetItems = [...animals].sort(() => Math.random() - 0.5).slice(0, 3);
+      const shuffledShadows = [...targetItems].sort(() => Math.random() - 0.5);
+
+      const shadowRow = container.querySelector('#shadow-row');
+      const itemRow = container.querySelector('#item-row');
+
+      // Render Shadows
+      shuffledShadows.forEach(item => {
+        const shadowDiv = document.createElement('div');
+        shadowDiv.dataset.id = item.id;
+        shadowDiv.style.cssText = `font - size: 4rem; color: transparent; text - shadow: 0 0 0 #cfd8dc; width: 80px; height: 80px; display: flex; align - items: center; justify - content: center; cursor: pointer; background: #eee; border - radius: 16px; transition:all 0.2s; `;
+        shadowDiv.textContent = item.emoji;
+        shadowRow.appendChild(shadowDiv);
+      });
+
+      // Render Items
+      targetItems.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.dataset.id = item.id;
+        itemDiv.style.cssText = `font - size: 4rem; width: 80px; height: 80px; display: flex; align - items: center; justify - content: center; cursor: pointer; background: #fff; border: 3px solid #ddd; border - radius: 16px; transition:transform 0.2s, border 0.2s; `;
+        itemDiv.textContent = item.emoji;
+        itemRow.appendChild(itemDiv);
+      });
+
+      let selectedItem = null;
+      let matchedCount = 0;
+
+      // Click to select item
+      Array.from(itemRow.children).forEach(el => {
+        el.addEventListener('click', () => {
+          if (el.style.visibility === 'hidden') return; // Already matched
+          if (selectedItem) selectedItem.style.border = '3px solid #ddd'; // Deselect previous
+          selectedItem = el;
+          el.style.border = '3px solid var(--primary)';
+          el.style.transform = 'scale(1.1)';
+          if (window.AudioFX) window.AudioFX.pop();
+        });
+      });
+
+      // Click shadow to match
+      Array.from(shadowRow.children).forEach(shadow => {
+        shadow.addEventListener('click', () => {
+          if (!selectedItem) return;
+
+          if (shadow.dataset.id === selectedItem.dataset.id) {
+            // Match!
+            if (window.AudioFX) window.AudioFX.success();
+            shadow.style.color = 'inherit'; // Reveal original colors
+            shadow.style.textShadow = 'none';
+            shadow.style.background = '#e8f5e9'; // Green success BG
+            selectedItem.style.visibility = 'hidden'; // Hide item from bottom
+            selectedItem = null;
+            matchedCount++;
+
+            if (matchedCount === 3) {
+              feedback(container, 'Perfect Match! 🎉', 'var(--success)');
+              setTimeout(() => showStars(container, 3), 800);
+            }
+          } else {
+            // Wrong!
+            if (window.AudioFX) window.AudioFX.error();
+            feedback(container, 'Not quite! Try again.', '#f44336');
+            selectedItem.style.border = '3px solid #ddd';
+            selectedItem.style.transform = 'scale(1)';
+            selectedItem = null;
+          }
+        });
+      });
+
+      attachGuardian(container, 'shadow');
+    }
+  },
+
+  // 21. XYLOPHONE (Music Maker free play)
+  xylophone: {
+    render(container) {
+      recordProgress('activity', 'Music Maker');
+      container.innerHTML = `
+          < h2 class="game-title" > Music Maker 🎵</h2 >
+        <p style="text-align:center;font-size:1.1rem;color:#888;margin-bottom:1.5rem;">Tap the bars to make a song!</p>
+        
+        <div style="display:flex;justify-content:center;align-items:flex-end;gap:0.8rem;height:240px;margin-bottom:2rem;" id="xylo-bars">
+            <!-- Bars generated via JS to set gradient sizes -->
+        </div>
+        <div style="display:flex;justify-content:center;">
+             <button class="btn" id="finish-xylo">I Finished My Song! 🌟</button>
+        </div>
+        ${guardianBtn('xylophone')}
+        `;
+
+      const barContainer = container.querySelector('#xylo-bars');
+      // Pentatonic scale is great for random plucking, always sounds good!
+      const notes = [
+        { freq: 261.63, color: '#f44336', height: '100%' }, // C4
+        { freq: 293.66, color: '#FF9800', height: '90%' },  // D4
+        { freq: 329.63, color: '#FFEB3B', height: '80%' },  // E4
+        { freq: 392.00, color: '#4CAF50', height: '70%' },  // G4
+        { freq: 440.00, color: '#2196F3', height: '60%' },  // A4
+        { freq: 523.25, color: '#9C27B0', height: '50%' }   // C5
+      ];
+
+      // Audio Context
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const actx = AudioContext ? new AudioContext() : null;
+
+      notes.forEach(note => {
+        const bar = document.createElement('div');
+        bar.style.cssText = `width: 45px; height: ${note.height}; background: ${note.color}; border - radius: 12px; cursor: pointer; box - shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: transform 0.1s, filter 0.1s; border: 2px solid rgba(255, 255, 255, 0.4); `;
+
+        bar.addEventListener('mousedown', playNote);
+        bar.addEventListener('touchstart', playNote, { passive: false });
+
+        function playNote(e) {
+          e.preventDefault(); // Prevent double trigger on touch devices
+          bar.style.transform = 'translateY(10px)';
+          bar.style.filter = 'brightness(1.2)';
+
+          if (actx) {
+            if (actx.state === 'suspended') actx.resume();
+            const osc = actx.createOscillator();
+            const gain = actx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(note.freq, actx.currentTime);
+            // ADSR like envelope
+            gain.gain.setValueAtTime(0, actx.currentTime);
+            gain.gain.linearRampToValueAtTime(1, actx.currentTime + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 1.5);
+
+            osc.connect(gain);
+            gain.connect(actx.destination);
+            osc.start();
+            osc.stop(actx.currentTime + 1.5);
+          } else if (window.AudioFX) {
+            window.AudioFX.pop(); // Fallback
+          }
+
+          setTimeout(() => {
+            bar.style.transform = 'translateY(0)';
+            bar.style.filter = 'none';
+          }, 100);
+        }
+        barContainer.appendChild(bar);
+      });
+
+      container.querySelector('#finish-xylo').onclick = () => {
+        showStars(container, 3);
+      };
+
+      attachGuardian(container, 'xylophone');
+    }
+  },
+
+  // 22. CATCH THE STARS (Reflex Game)
+  catchStars: {
+    render(container) {
+      recordProgress('activity', 'Catch the Stars');
+      container.innerHTML = `
+          < h2 class="game-title" > Catch the Stars ⭐️</h2 >
+        <p style="text-align:center;font-size:1.1rem;color:#888;">Tap 10 stars before they fly away!</p>
+        
+        <div id="sky-area" style="position:relative;width:100%;max-width:600px;height:350px;background:linear-gradient(to bottom, #1a237e, #311b92);border-radius:24px;overflow:hidden;margin:1rem auto;border:4px solid #673ab7;flex-shrink:0;">
+             <!-- Stars spawn here -->
+        </div>
+        <div id="feedback" style="text-align:center;font-size:1.4rem;font-weight:bold;height:2rem;color:var(--accent);margin-top:1rem;">0 / 10 Caught</div>
+        ${guardianBtn('catchStars')}
+        `;
+
+      let caught = 0;
+      const sky = container.querySelector('#sky-area');
+      const feedbackEl = container.querySelector('#feedback');
+      let isPlaying = true;
+      let spawnInterval;
+
+      const spawnStar = () => {
+        if (!isPlaying) return;
+
+        const star = document.createElement('div');
+        star.textContent = '⭐';
+        // Random size between 2rem and 4rem
+        const size = Math.random() * 2 + 2;
+        // Random horizontal start position
+        const startX = Math.random() * 85 + 5;
+
+        star.style.cssText = `position: absolute; font - size:${size} rem; cursor: pointer; left:${startX}%; bottom: -20 %; transition:bottom 4s linear; user - select: none; filter: drop - shadow(0 0 10px rgba(255, 235, 59, 0.8)); `;
+
+        sky.appendChild(star);
+
+        // Force reflow
+        void star.offsetHeight;
+        // Fly up relative to container
+        setTimeout(() => { star.style.bottom = '120%'; }, 50);
+
+        star.addEventListener('mousedown', catchStar);
+        star.addEventListener('touchstart', catchStar, { passive: false });
+
+        function catchStar(e) {
+          if (e) e.preventDefault();
+          if (star.textContent !== '⭐') return; // Already caught
+
+          star.textContent = '✨';
+          star.style.transition = 'none';
+          if (window.AudioFX) window.AudioFX.success();
+
+          caught++;
+          feedbackEl.textContent = `${caught} / 10 Caught`;
+
+          setTimeout(() => star.remove(), 300);
+
+          if (caught >= 10 && isPlaying) {
+            isPlaying = false;
+            clearInterval(spawnInterval);
+            feedback(container, 'You are a Star Catcher! 🌟', 'var(--accent)');
+            setTimeout(() => showStars(container, 3), 800);
+          }
+        }
+
+        // Clean up missed stars
+        star.addEventListener('transitionend', () => {
+          if (star.parentNode === sky) {
+            star.remove();
+          }
+        });
+      };
+
+      // Spawn a star every 800ms to 1200ms
+      const runSpawner = () => {
+        if (!isPlaying) return;
+        spawnStar();
+        spawnInterval = setTimeout(runSpawner, Math.random() * 400 + 800);
+      };
+
+      runSpawner();
+      attachGuardian(container, 'catchStars');
     }
   }
 };

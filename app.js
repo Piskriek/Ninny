@@ -116,7 +116,7 @@ function buildDailySchedule() {
         return Math.floor((x - Math.floor(x)) * max);
     }
 
-    const available = ['sculptor', 'obstacle', 'scavenger', 'charades', 'music', 'math', 'yoga', 'color', 'shape', 'story', 'drawing', 'match', 'trace', 'breathing', 'balloon', 'sorting'];
+    const available = ['sculptor', 'obstacle', 'scavenger', 'charades', 'music', 'math', 'yoga', 'color', 'shape', 'story', 'drawing', 'match', 'trace', 'breathing', 'balloon', 'sorting', 'oddOne', 'shadow', 'xylophone', 'catchStars'];
     const selected = [];
 
     // Pick 4 unique activities using the seed
@@ -150,6 +150,10 @@ function buildDailySchedule() {
         'breathing': { icon: '🧘', name: 'Zen Breather', time: '09:30 – 10:15' },
         'balloon': { icon: '🎈', name: 'Balloon Pop', time: '10:45 – 11:45' },
         'sorting': { icon: '🗂️', name: 'Category Sorter', time: '12:15 – 13:00' },
+        'oddOne': { icon: '🕵️', name: 'Odd One Out', time: '09:30 – 10:15' },
+        'shadow': { icon: '🌚', name: 'Shadow Match', time: '10:45 – 11:45' },
+        'xylophone': { icon: '🎹', name: 'Music Maker', time: '12:15 – 13:00' },
+        'catchStars': { icon: '⭐️', name: 'Catch Stars', time: '14:00 – 14:45' },
         'suitcase': { icon: '🧳', name: 'Memory Suitcase', time: '14:45 – 15:00' }
     };
 
