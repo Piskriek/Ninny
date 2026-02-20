@@ -1236,7 +1236,7 @@ const activities = {
         <p style="font-size:1.1rem;color:#888;margin-bottom:1.5rem;">Find the matching pairs!</p>
         <div class="match-grid" id="match-grid"></div>
         <div id="feedback" style="min-height:2rem;font-size:1.4rem;font-weight:bold;color:var(--primary);margin-top:1rem;"></div>
-        \${guardianBtn('scavenger')}
+        ${guardianBtn('scavenger')}
       `;
 
       const grid = container.querySelector('#match-grid');
@@ -1324,7 +1324,7 @@ const activities = {
             <button class="btn" id="clear-trace" style="background:#ccc;color:#333;padding:0.6rem 1.2rem;font-size:1rem;">Start Again</button>
             <button class="btn" id="finish-trace">I Did It! ✨</button>
         </div>
-        \${guardianBtn('sculptor')}
+        ${guardianBtn('sculptor')}
       `;
 
       const canvas = container.querySelector('#trace-canvas');
@@ -1429,7 +1429,7 @@ const activities = {
       container.innerHTML = `
         <h2 class="game-title">Balloon Pop 🎈</h2>
         <p style="text-align:center;font-size:1.2rem;color:#666;">Pop 5 balloons!</p>
-        <div id="balloon-area" style="position:relative;height:300px;background:#e0f7fa;border-radius:24px;overflow:hidden;margin:1rem;border:4px solid #b2ebf2;">
+        <div id="balloon-area" style="position:relative;width:100%;max-width:600px;height:300px;background:#e0f7fa;border-radius:24px;overflow:hidden;margin:1rem;border:4px solid #b2ebf2;flex-shrink:0;">
         </div>
         <div id="feedback" style="text-align:center;font-size:1.4rem;font-weight:bold;height:2rem;color:var(--primary);margin-top:1rem;"></div>
       `;
