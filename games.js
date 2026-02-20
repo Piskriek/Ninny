@@ -1668,7 +1668,7 @@ const activities = {
       shuffledShadows.forEach(item => {
         const shadowDiv = document.createElement('div');
         shadowDiv.dataset.id = item.id;
-        shadowDiv.style.cssText = `font - size: 4rem; color: transparent; text - shadow: 0 0 0 #cfd8dc; width: 80px; height: 80px; display: flex; align - items: center; justify - content: center; cursor: pointer; background: #eee; border - radius: 16px; transition:all 0.2s; `;
+        shadowDiv.style.cssText = `font-size: 4rem; color: transparent; text-shadow: 0 0 0 #cfd8dc; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #eee; border-radius: 16px; transition:all 0.2s; `;
         shadowDiv.textContent = item.emoji;
         shadowRow.appendChild(shadowDiv);
       });
@@ -1677,7 +1677,7 @@ const activities = {
       targetItems.forEach(item => {
         const itemDiv = document.createElement('div');
         itemDiv.dataset.id = item.id;
-        itemDiv.style.cssText = `font - size: 4rem; width: 80px; height: 80px; display: flex; align - items: center; justify - content: center; cursor: pointer; background: #fff; border: 3px solid #ddd; border - radius: 16px; transition:transform 0.2s, border 0.2s; `;
+        itemDiv.style.cssText = `font-size: 4rem; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #fff; border: 3px solid #ddd; border-radius: 16px; transition:transform 0.2s, border 0.2s; `;
         itemDiv.textContent = item.emoji;
         itemRow.appendChild(itemDiv);
       });
