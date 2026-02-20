@@ -108,7 +108,7 @@ function buildDailySchedule() {
         return Math.floor((x - Math.floor(x)) * max);
     }
 
-    const available = ['sculptor', 'obstacle', 'scavenger', 'charades', 'music', 'math', 'yoga', 'color', 'shape', 'story'];
+    const available = ['sculptor', 'obstacle', 'scavenger', 'charades', 'music', 'math', 'yoga', 'color', 'shape', 'story', 'drawing', 'match', 'trace'];
     const selected = [];
 
     // Pick 4 unique activities using the seed
@@ -136,6 +136,9 @@ function buildDailySchedule() {
         'color': { icon: '🎨', name: 'Color Splash', time: '12:15 – 13:00' },
         'shape': { icon: '🔺', name: 'Shape Sorter', time: '14:00 – 14:45' },
         'story': { icon: '📖', name: 'Story Spinner', time: '14:00 – 14:45' },
+        'drawing': { icon: '🖌️', name: 'Little Artist', time: '10:45 – 11:45' },
+        'match': { icon: '🧩', name: 'Memory Match', time: '12:15 – 13:00' },
+        'trace': { icon: '✍️', name: 'Letter Tracer', time: '14:00 – 14:45' },
         'suitcase': { icon: '🧳', name: 'Memory Suitcase', time: '14:45 – 15:00' }
     };
 

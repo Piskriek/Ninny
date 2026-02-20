@@ -13,6 +13,11 @@ function feedback(container, msg, color = 'var(--primary)') {
   el.textContent = msg;
   el.style.color = color;
   el.style.transform = 'scale(1.1)';
+  if (window.AudioFX) {
+    if (color === 'var(--success)') window.AudioFX.success();
+    else if (color === 'red') window.AudioFX.error();
+    else window.AudioFX.pop();
+  }
   setTimeout(() => { if (el) el.style.transform = 'scale(1)'; }, 250);
 }
 
@@ -49,6 +54,10 @@ function showStars(container, n = 3) {
     star.style.cssText = `position:absolute;font-size:2.8rem;left:${15 + Math.random() * 70}%;top:${20 + Math.random() * 50}%;animation:floatUp 1.5s ease forwards;pointer-events:none;z-index:999;`;
     container.appendChild(star);
     setTimeout(() => star.remove(), 1500);
+  }
+  if (window.AudioFX) {
+    if (n >= 2) window.AudioFX.tada();
+    else window.AudioFX.success();
   }
   if (n >= 2) partyTime(container, n * 4);
   recordProgress('star', n);
@@ -1067,6 +1076,297 @@ const activities = {
 
       renderRound();
     }
-  }
+  },
 
-}; // <-- End of activities object (do not replace this line, we inject before it)
+  // 13. DRAWING (Little Artist - HTML5 Canvas)
+  drawing: {
+    render(container) {
+      const dayData = getCurrentDayData();
+      recordProgress('activity', 'Little Artist');
+
+      const drawPrompt = dayData.drawPrompt || `Draw something amazing!`;
+
+      container.innerHTML = `
+        <h2 class="game-title" style="margin-bottom:0.5rem;">Little Artist 🖌️</h2>
+        <p style="font-size:1.1rem;color:#666;margin-bottom:1rem;">Prompt: <strong>${drawPrompt}</strong></p>
+        
+        <div style="display:flex;gap:0.5rem;margin-bottom:1rem;justify-content:center;flex-wrap:wrap;" id="color-palette">
+            <!-- Colors injected via JS -->
+        </div>
+        
+        <div style="border:4px solid #eaeaea;border-radius:24px;overflow:hidden;touch-action:none;box-shadow:inset 0 4px 10px rgba(0,0,0,0.05);background:white;">
+            <canvas id="draw-canvas" width="600" height="400" style="display:block;width:100%;max-width:600px;height:auto;cursor:crosshair;"></canvas>
+        </div>
+        
+        <div style="margin-top:1.5rem;display:flex;gap:1rem;justify-content:center;">
+            <button class="btn" id="clear-canvas" style="background:#ccc;color:#333;">🗑️ Clear</button>
+            <button class="btn" id="finish-drawing">I'm Finished! ✨</button>
+        </div>
+        ${guardianBtn('sculptor')} 
+      `;
+
+      const canvas = container.querySelector('#draw-canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.lineWidth = 8;
+
+      let isDrawing = false;
+      let lastX = 0;
+      let lastY = 0;
+      let currentColor = '#ff85a2'; // Default pink
+
+      // Color Palette
+      const colors = ['#ff85a2', '#ff595e', '#ffca3a', '#8ecae6', '#1982c4', '#8ac926', '#6a4c93', '#333333'];
+      const palette = container.querySelector('#color-palette');
+      colors.forEach(c => {
+        const btn = document.createElement('div');
+        btn.style.cssText = `width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c === currentColor ? '#333' : 'transparent'};transition:transform 0.2s;`;
+        btn.className = 'color-blob';
+        btn.onclick = () => {
+          currentColor = c;
+          Array.from(palette.children).forEach(b => b.style.borderColor = 'transparent');
+          btn.style.borderColor = '#333';
+          if (window.AudioFX) window.AudioFX.pop();
+        };
+        palette.appendChild(btn);
+      });
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        // Scale coordinates if canvas visually resized
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+          x: (clientX - rect.left) * scaleX,
+          y: (clientY - rect.top) * scaleY
+        };
+      }
+
+      function start(e) {
+        isDrawing = true;
+        const pos = getPos(e);
+        [lastX, lastY] = [pos.x, pos.y];
+      }
+
+      function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault(); // prevent scroll
+        const pos = getPos(e);
+        ctx.strokeStyle = currentColor;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        [lastX, lastY] = [pos.x, pos.y];
+      }
+
+      function stop() { isDrawing = false; }
+
+      canvas.addEventListener('mousedown', start);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stop);
+      canvas.addEventListener('mouseout', stop);
+
+      canvas.addEventListener('touchstart', start, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
+      canvas.addEventListener('touchend', stop);
+
+      container.querySelector('#clear-canvas').onclick = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (window.AudioFX) window.AudioFX.error();
+      };
+
+      container.querySelector('#finish-drawing').onclick = () => {
+        showStars(container, 3);
+        container.querySelector('#finish-drawing').textContent = 'Masterpiece! 🖼️';
+      };
+
+      attachGuardian(container, 'sculptor');
+    }
+  },
+
+  // 14. MEMORY MATCH (3D card flipping)
+  match: {
+    render(container) {
+      const dayData = getCurrentDayData();
+      recordProgress('activity', 'Memory Match');
+
+      const set = dayData.animals && dayData.animals.length >= 4
+        ? dayData.animals.slice(0, 4)
+        : ['🐶', '🐱', '🐭', '🐰'];
+
+      // Create pairs and shuffle
+      const deck = shuffle([...set, ...set]);
+
+      // Inject CSS for 3D flip if not exists
+      if (!document.getElementById('match-css')) {
+        const style = document.createElement('style');
+        style.id = 'match-css';
+        style.textContent = `
+            .match-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; max-width:500px; margin:0 auto 2rem auto; perspective:1000px; }
+            .match-card { width:100%; aspect-ratio:1/1; position:relative; cursor:pointer; transform-style:preserve-3d; transition:transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1); border-radius:16px; box-shadow:0 6px 16px rgba(0,0,0,0.1); }
+            .match-card.flipped { transform:rotateY(180deg); }
+            .match-card-face { position:absolute; inset:0; backface-visibility:hidden; display:flex; align-items:center; justify-content:center; border-radius:16px; font-size:3rem; }
+            .match-card-front { background:linear-gradient(135deg, var(--secondary) 0%, #48cae4 100%); font-size:2rem; color:white; }
+            .match-card-back { background:white; transform:rotateY(180deg); border:3px solid var(--secondary); }
+            .match-card.matched .match-card-back { background:#e8f5e9; border-color:#81c784; }
+          `;
+          document.head.appendChild(style);
+      }
+      
+      container.innerHTML = `
+        <h2 class="game-title">Memory Match 🧩</h2>
+        <p style="font-size:1.1rem;color:#888;margin-bottom:1.5rem;">Find the matching pairs!</p>
+        <div class="match-grid" id="match-grid"></div>
+        <div id="feedback" style="min-height:2rem;font-size:1.4rem;font-weight:bold;color:var(--primary);margin-top:1rem;"></div>
+        \${guardianBtn('scavenger')}
+      `;
+      
+      const grid = container.querySelector('#match-grid');
+      let flippedCards = [];
+      let matchedCount = 0;
+      let locked = false;
+      
+      deck.forEach((item, index) => {
+          const card = document.createElement('div');
+          card.className = 'match-card';
+          card.dataset.val = item;
+          card.innerHTML = `
+              <div class="match-card-face match-card-front">❓</div>
+              <div class="match-card-face match-card-back">\${item}</div>
+          `;
+          
+          card.addEventListener('click', () => {
+              if (locked || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+              
+              if(window.AudioFX) window.AudioFX.pop();
+              card.classList.add('flipped');
+              flippedCards.push(card);
+              
+              if (flippedCards.length === 2) {
+                  locked = true;
+                  const [c1, c2] = flippedCards;
+                  if (c1.dataset.val === c2.dataset.val) {
+                      // Match
+                      setTimeout(() => {
+                          if(window.AudioFX) window.AudioFX.success();
+                          c1.classList.add('matched');
+                          c2.classList.add('matched');
+                          feedback(container, 'A match! 🎉', 'var(--success)');
+                          matchedCount += 2;
+                          flippedCards = [];
+                          locked = false;
+                          
+                          if (matchedCount === deck.length) {
+                              feedback(container, 'You found them all!', 'var(--primary)');
+                              showStars(container, 3);
+                          }
+                      }, 500);
+                  } else {
+                      // No match
+                      setTimeout(() => {
+                          if(window.AudioFX) window.AudioFX.error();
+                          c1.classList.remove('flipped');
+                          c2.classList.remove('flipped');
+                          flippedCards = [];
+                          locked = false;
+                      }, 1000);
+                  }
+              }
+          });
+          grid.appendChild(card);
+      });
+      
+      attachGuardian(container, 'scavenger');
+    }
+  },
+
+  // 15. LETTER TRACER (Canvas drawing over text)
+  trace: {
+    render(container) {
+      const dayData = getCurrentDayData();
+      recordProgress('activity', 'Letter Tracer');
+      
+      const letters = dayData.letters || ['A', 'B'];
+      const letter = pick(letters);
+      
+      container.innerHTML = `
+        <h2 class="game-title">Trace the Letter ✍️</h2>
+        <p style="font-size:1.1rem;color:#888;margin-bottom:1rem;">Follow the shape of the letter <strong>\${letter}</strong>!</p>
+        
+        <div style="position:relative;width:300px;height:350px;margin:0 auto 1.5rem auto;border:4px dashed #ddd;border-radius:24px;background:#fafafa;overflow:hidden;touch-action:none;">
+            <!-- Background Letter -->
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:220px;font-weight:bold;color:#eee;user-select:none;pointer-events:none;font-family:sans-serif;">
+                \${letter}
+            </div>
+            <!-- Drawing Canvas on top -->
+            <canvas id="trace-canvas" width="300" height="350" style="position:absolute;inset:0;cursor:crosshair;"></canvas>
+        </div>
+        
+        <div style="display:flex;gap:1rem;justify-content:center;">
+            <button class="btn" id="clear-trace" style="background:#ccc;color:#333;padding:0.6rem 1.2rem;font-size:1rem;">Start Again</button>
+            <button class="btn" id="finish-trace">I Did It! ✨</button>
+        </div>
+        \${guardianBtn('sculptor')}
+      `;
+      
+      const canvas = container.querySelector('#trace-canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.lineWidth = 24; // Thick marker
+      ctx.strokeStyle = 'rgba(255, 183, 3, 0.7)'; // Translucent accent color
+      
+      let isDrawing = false;
+      let lastX = 0, lastY = 0;
+      
+      function getPos(e) {
+          const rect = canvas.getBoundingClientRect();
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          return { x: clientX - rect.left, y: clientY - rect.top };
+      }
+      
+      function start(e) {
+          isDrawing = true;
+          const pos = getPos(e);
+          [lastX, lastY] = [pos.x, pos.y];
+          if(window.AudioFX) window.AudioFX.pop();
+      }
+      function draw(e) {
+          if (!isDrawing) return;
+          e.preventDefault();
+          const pos = getPos(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.stroke();
+          [lastX, lastY] = [pos.x, pos.y];
+      }
+      function stop() { isDrawing = false; }
+      
+      canvas.addEventListener('mousedown', start);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stop);
+      canvas.addEventListener('mouseout', stop);
+      canvas.addEventListener('touchstart', start, {passive: false});
+      canvas.addEventListener('touchmove', draw, {passive: false});
+      canvas.addEventListener('touchend', stop);
+      
+      container.querySelector('#clear-trace').onclick = () => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          if(window.AudioFX) window.AudioFX.error();
+      };
+      
+      container.querySelector('#finish-trace').onclick = () => {
+          showStars(container, 3);
+      };
+      
+      attachGuardian(container, 'sculptor');
+    }
+  }
+};
+// <-- End of activities object (do not replace this line, we inject before it)
