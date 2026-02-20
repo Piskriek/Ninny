@@ -259,6 +259,33 @@ function showParentGate() {
 
 document.querySelector('.logo').addEventListener('click', showParentGate);
 
+// ── Fullscreen Toggle ───────────────────────────────────────
+const fullscreenBtn = document.getElementById('fullscreen-btn');
+if (fullscreenBtn) {
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.log(`Error attempting to enable fullscreen: ${err.message}`);
+            });
+            fullscreenBtn.textContent = '❌ Exit Fullscreen';
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+                fullscreenBtn.textContent = '📺 Fullscreen';
+            }
+        }
+    });
+
+    // Listen for escape key or other fullscreen exits to reset button text
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            fullscreenBtn.textContent = '📺 Fullscreen';
+        } else {
+            fullscreenBtn.textContent = '❌ Exit Fullscreen';
+        }
+    });
+}
+
 // ── Boot ──────────────────────────────────────────────────
 applyWeekTheme();
 loadActivity('weather');

@@ -69,13 +69,15 @@ body {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-right: 1px solid var(--glass-border);
-    padding: 1.5rem 1rem;
+    padding: 1rem 0.8rem;
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
     box-shadow: 4px 0 30px rgba(0, 0, 0, 0.03);
     z-index: 10;
     overflow-y: auto;
+    overflow-x: hidden;
+    height: 100vh;
 }
 
 .logo {
@@ -236,8 +238,9 @@ nav {
     background: #fdf2f5;
     border: 1px dashed var(--primary);
     border-radius: 12px;
-    padding: 0.6rem;
+    padding: 0.5rem;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .caretaker-note p {
@@ -364,9 +367,6 @@ nav {
 .guardian-trigger {
     background: var(--accent) !important;
     box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15) !important;
-    position: absolute !important;
-    bottom: 1rem !important;
-    right: 1rem !important;
     font-size: 0.82rem !important;
     padding: 0.4rem 0.9rem !important;
 }

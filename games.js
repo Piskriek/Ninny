@@ -82,7 +82,7 @@ function speakBtn(text) {
 }
 
 function guardianBtn(actKey) {
-  return `<button class="btn guardian-trigger" data-key="${actKey}" style="background:var(--accent);position:absolute;bottom:1rem;right:1rem;font-size:0.85rem;padding:0.45rem 1rem;">🧑‍🤝‍🧒 Play Together</button>`;
+  return `<div style="width:100%;display:flex;justify-content:flex-end;margin-top:0.5rem;"><button class="btn guardian-trigger" data-key="${actKey}" style="background:var(--accent);font-size:0.85rem;padding:0.45rem 1rem;">🧑‍🤝‍🧒 Play Together</button></div>`;
 }
 
 function showGuardianOverlay(actKey) {
@@ -1228,9 +1228,9 @@ const activities = {
             .match-card-back { background:white; transform:rotateY(180deg); border:3px solid var(--secondary); }
             .match-card.matched .match-card-back { background:#e8f5e9; border-color:#81c784; }
           `;
-          document.head.appendChild(style);
+        document.head.appendChild(style);
       }
-      
+
       container.innerHTML = `
         <h2 class="game-title">Memory Match 🧩</h2>
         <p style="font-size:1.1rem;color:#888;margin-bottom:1.5rem;">Find the matching pairs!</p>
@@ -1238,62 +1238,62 @@ const activities = {
         <div id="feedback" style="min-height:2rem;font-size:1.4rem;font-weight:bold;color:var(--primary);margin-top:1rem;"></div>
         \${guardianBtn('scavenger')}
       `;
-      
+
       const grid = container.querySelector('#match-grid');
       let flippedCards = [];
       let matchedCount = 0;
       let locked = false;
-      
+
       deck.forEach((item, index) => {
-          const card = document.createElement('div');
-          card.className = 'match-card';
-          card.dataset.val = item;
-          card.innerHTML = `
+        const card = document.createElement('div');
+        card.className = 'match-card';
+        card.dataset.val = item;
+        card.innerHTML = `
               <div class="match-card-face match-card-front">❓</div>
               <div class="match-card-face match-card-back">\${item}</div>
           `;
-          
-          card.addEventListener('click', () => {
-              if (locked || card.classList.contains('flipped') || card.classList.contains('matched')) return;
-              
-              if(window.AudioFX) window.AudioFX.pop();
-              card.classList.add('flipped');
-              flippedCards.push(card);
-              
-              if (flippedCards.length === 2) {
-                  locked = true;
-                  const [c1, c2] = flippedCards;
-                  if (c1.dataset.val === c2.dataset.val) {
-                      // Match
-                      setTimeout(() => {
-                          if(window.AudioFX) window.AudioFX.success();
-                          c1.classList.add('matched');
-                          c2.classList.add('matched');
-                          feedback(container, 'A match! 🎉', 'var(--success)');
-                          matchedCount += 2;
-                          flippedCards = [];
-                          locked = false;
-                          
-                          if (matchedCount === deck.length) {
-                              feedback(container, 'You found them all!', 'var(--primary)');
-                              showStars(container, 3);
-                          }
-                      }, 500);
-                  } else {
-                      // No match
-                      setTimeout(() => {
-                          if(window.AudioFX) window.AudioFX.error();
-                          c1.classList.remove('flipped');
-                          c2.classList.remove('flipped');
-                          flippedCards = [];
-                          locked = false;
-                      }, 1000);
-                  }
-              }
-          });
-          grid.appendChild(card);
+
+        card.addEventListener('click', () => {
+          if (locked || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+          if (window.AudioFX) window.AudioFX.pop();
+          card.classList.add('flipped');
+          flippedCards.push(card);
+
+          if (flippedCards.length === 2) {
+            locked = true;
+            const [c1, c2] = flippedCards;
+            if (c1.dataset.val === c2.dataset.val) {
+              // Match
+              setTimeout(() => {
+                if (window.AudioFX) window.AudioFX.success();
+                c1.classList.add('matched');
+                c2.classList.add('matched');
+                feedback(container, 'A match! 🎉', 'var(--success)');
+                matchedCount += 2;
+                flippedCards = [];
+                locked = false;
+
+                if (matchedCount === deck.length) {
+                  feedback(container, 'You found them all!', 'var(--primary)');
+                  showStars(container, 3);
+                }
+              }, 500);
+            } else {
+              // No match
+              setTimeout(() => {
+                if (window.AudioFX) window.AudioFX.error();
+                c1.classList.remove('flipped');
+                c2.classList.remove('flipped');
+                flippedCards = [];
+                locked = false;
+              }, 1000);
+            }
+          }
+        });
+        grid.appendChild(card);
       });
-      
+
       attachGuardian(container, 'scavenger');
     }
   },
@@ -1303,10 +1303,10 @@ const activities = {
     render(container) {
       const dayData = getCurrentDayData();
       recordProgress('activity', 'Letter Tracer');
-      
+
       const letters = dayData.letters || ['A', 'B'];
       const letter = pick(letters);
-      
+
       container.innerHTML = `
         <h2 class="game-title">Trace the Letter ✍️</h2>
         <p style="font-size:1.1rem;color:#888;margin-bottom:1rem;">Follow the shape of the letter <strong>\${letter}</strong>!</p>
@@ -1326,59 +1326,59 @@ const activities = {
         </div>
         \${guardianBtn('sculptor')}
       `;
-      
+
       const canvas = container.querySelector('#trace-canvas');
       const ctx = canvas.getContext('2d');
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
       ctx.lineWidth = 24; // Thick marker
       ctx.strokeStyle = 'rgba(255, 183, 3, 0.7)'; // Translucent accent color
-      
+
       let isDrawing = false;
       let lastX = 0, lastY = 0;
-      
+
       function getPos(e) {
-          const rect = canvas.getBoundingClientRect();
-          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-          return { x: clientX - rect.left, y: clientY - rect.top };
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
       }
-      
+
       function start(e) {
-          isDrawing = true;
-          const pos = getPos(e);
-          [lastX, lastY] = [pos.x, pos.y];
-          if(window.AudioFX) window.AudioFX.pop();
+        isDrawing = true;
+        const pos = getPos(e);
+        [lastX, lastY] = [pos.x, pos.y];
+        if (window.AudioFX) window.AudioFX.pop();
       }
       function draw(e) {
-          if (!isDrawing) return;
-          e.preventDefault();
-          const pos = getPos(e);
-          ctx.beginPath();
-          ctx.moveTo(lastX, lastY);
-          ctx.lineTo(pos.x, pos.y);
-          ctx.stroke();
-          [lastX, lastY] = [pos.x, pos.y];
+        if (!isDrawing) return;
+        e.preventDefault();
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        [lastX, lastY] = [pos.x, pos.y];
       }
       function stop() { isDrawing = false; }
-      
+
       canvas.addEventListener('mousedown', start);
       canvas.addEventListener('mousemove', draw);
       canvas.addEventListener('mouseup', stop);
       canvas.addEventListener('mouseout', stop);
-      canvas.addEventListener('touchstart', start, {passive: false});
-      canvas.addEventListener('touchmove', draw, {passive: false});
+      canvas.addEventListener('touchstart', start, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
       canvas.addEventListener('touchend', stop);
-      
+
       container.querySelector('#clear-trace').onclick = () => {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          if(window.AudioFX) window.AudioFX.error();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (window.AudioFX) window.AudioFX.error();
       };
-      
+
       container.querySelector('#finish-trace').onclick = () => {
-          showStars(container, 3);
+        showStars(container, 3);
       };
-      
+
       attachGuardian(container, 'sculptor');
     }
   },
@@ -1435,7 +1435,7 @@ const activities = {
       `;
       const area = container.querySelector('#balloon-area');
       let popped = 0;
-      
+
       const spawn = () => {
         if (popped >= 5) {
           feedback(container, 'All popped! 🎉', 'var(--success)');
@@ -1444,7 +1444,7 @@ const activities = {
         }
         const b = document.createElement('div');
         b.textContent = '🎈';
-        b.style.cssText = `position:absolute;font-size:4rem;cursor:pointer;left:${Math.random()*70 + 10}%;bottom:-20%;transition:bottom 3.5s linear;`;
+        b.style.cssText = `position:absolute;font-size:4rem;cursor:pointer;left:${Math.random() * 70 + 10}%;bottom:-20%;transition:bottom 3.5s linear;`;
         area.appendChild(b);
         setTimeout(() => b.style.bottom = '120%', 50);
         b.onclick = () => {
@@ -1457,7 +1457,7 @@ const activities = {
           setTimeout(spawn, 500);
         };
         b.addEventListener('transitionend', () => {
-          if(b.textContent === '🎈') { b.remove(); spawn(); }
+          if (b.textContent === '🎈') { b.remove(); spawn(); }
         });
       };
       setTimeout(spawn, 500);
@@ -1484,9 +1484,9 @@ const activities = {
         { emoji: '🐳', color: 'blue' }, { emoji: '📘', color: 'blue' },
         { emoji: '🐸', color: 'green' }, { emoji: '🌳', color: 'green' }
       ].sort(() => Math.random() - 0.5);
-      
+
       let currentItem = 0;
-      
+
       const renderNext = () => {
         itemsContainer.innerHTML = '';
         if (currentItem >= items.length) {
@@ -1499,7 +1499,7 @@ const activities = {
         el.textContent = item.emoji;
         el.style.cssText = 'font-size:3.5rem;cursor:pointer;animation:bounce-in 0.5s;';
         itemsContainer.appendChild(el);
-        
+
         container.querySelectorAll('#boxes div').forEach(box => {
           box.onclick = () => {
             if (box.dataset.color === item.color) {
