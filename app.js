@@ -218,7 +218,14 @@ function loadActivity(id) {
 
     setTimeout(() => {
         if (typeof activities !== 'undefined' && activities[id]) {
-            activities[id].render(gameContainer);
+            gameContainer.innerHTML = '<div id="zoom-container" style="width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; transform-origin: top center; transition: transform 0.2s ease;"></div>';
+            const zoomContainer = document.getElementById('zoom-container');
+            // Reapply current zoom
+            if (typeof currentZoom !== 'undefined') {
+                zoomContainer.style.transform = `scale(${currentZoom})`;
+                zoomContainer.style.width = `${100 / currentZoom}%`;
+            }
+            activities[id].render(zoomContainer);
         } else {
             gameContainer.innerHTML = `<h2 class="game-title">Coming soon! 🌸</h2>`;
         }
@@ -291,12 +298,13 @@ const scaleUpBtn = document.getElementById('scale-up');
 const scaleDownBtn = document.getElementById('scale-down');
 let currentZoom = 1;
 
-if (scaleUpBtn && scaleDownBtn && gameContainer) {
+if (scaleUpBtn && scaleDownBtn) {
     const updateZoom = () => {
-        gameContainer.style.transform = `scale(${currentZoom})`;
-        gameContainer.style.transformOrigin = 'top center';
-        gameContainer.style.width = `${100 / currentZoom}%`;
-        gameContainer.style.height = `${100 / currentZoom}%`;
+        const zoomContainer = document.getElementById('zoom-container');
+        if (zoomContainer) {
+            zoomContainer.style.transform = `scale(${currentZoom})`;
+            zoomContainer.style.width = `${100 / currentZoom}%`;
+        }
     };
 
     scaleUpBtn.addEventListener('click', () => {
