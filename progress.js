@@ -7,64 +7,64 @@
 const STORE_KEY = 'bloom_progress';
 
 function loadProgress() {
-    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
-    catch { return {}; }
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+  catch { return {}; }
 }
 
 function saveProgress(data) {
-    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  localStorage.setItem(STORE_KEY, JSON.stringify(data));
 }
 
 // ── Record an event (called from games) ───────────────────
 // type: 'star' | 'activity' | 'letter' | 'number'
 function recordProgress(type, detail) {
-    const data = loadProgress();
-    const today = getTodayKey(); // e.g. '2026-02-20'
-    const day = data[today] = data[today] || { stars: 0, activities: [], letters: [], numbers: [], notes: '' };
+  const data = loadProgress();
+  const today = getTodayKey(); // e.g. '2026-02-20'
+  const day = data[today] = data[today] || { stars: 0, activities: [], letters: [], numbers: [], notes: '' };
 
-    if (type === 'star') day.stars += (detail || 1);
-    if (type === 'activity') { if (!day.activities.includes(detail)) day.activities.push(detail); }
-    if (type === 'letter') { if (!day.letters.includes(detail)) day.letters.push(detail); }
-    if (type === 'number') { if (!day.numbers.includes(String(detail))) day.numbers.push(String(detail)); }
+  if (type === 'star') day.stars += (detail || 1);
+  if (type === 'activity') { if (!day.activities.includes(detail)) day.activities.push(detail); }
+  if (type === 'letter') { if (!day.letters.includes(detail)) day.letters.push(detail); }
+  if (type === 'number') { if (!day.numbers.includes(String(detail))) day.numbers.push(String(detail)); }
 
-    saveProgress(data);
+  saveProgress(data);
 }
 
 function getTodayKey() {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function getWeekDates() {
-    // Returns Mon–Fri ISO date strings for the current calendar week
-    const today = new Date();
-    const dow = today.getDay(); // 0=Sun
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
-    return Array.from({ length: 5 }, (_, i) => {
-        const d = new Date(monday);
-        d.setDate(monday.getDate() + i);
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    });
+  // Returns Mon–Fri ISO date strings for the current calendar week
+  const today = new Date();
+  const dow = today.getDay(); // 0=Sun
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  return Array.from({ length: 5 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
 }
 
 // ── Render the full Guardian Progress Dashboard ───────────
 function showProgressDashboard() {
-    const data = loadProgress();
-    const today = getTodayKey();
-    const weekDates = getWeekDates();
-    const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  const data = loadProgress();
+  const today = getTodayKey();
+  const weekDates = getWeekDates();
+  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
-    const totalStars = Object.values(data).reduce((s, d) => s + (d.stars || 0), 0);
-    const totalActivities = Object.values(data).reduce((s, d) => s + (d.activities?.length || 0), 0);
-    const todayData = data[today] || {};
+  const totalStars = Object.values(data).reduce((s, d) => s + (d.stars || 0), 0);
+  const totalActivities = Object.values(data).reduce((s, d) => s + (d.activities?.length || 0), 0);
+  const todayData = data[today] || {};
 
-    // Weekly attendance row
-    const attendanceHtml = weekDates.map((dateKey, i) => {
-        const d = data[dateKey];
-        const done = d && d.activities && d.activities.length > 0;
-        const isToday = dateKey === today;
-        return `
+  // Weekly attendance row
+  const attendanceHtml = weekDates.map((dateKey, i) => {
+    const d = data[dateKey];
+    const done = d && d.activities && d.activities.length > 0;
+    const isToday = dateKey === today;
+    return `
       <div style="text-align:center;flex:1;">
         <div style="font-size:0.75rem;font-weight:700;color:${isToday ? 'var(--primary)' : '#999'};margin-bottom:0.4rem;">${dayLabels[i]}</div>
         <div style="width:44px;height:44px;border-radius:50%;background:${done ? 'var(--accent)' : '#eee'};margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:1.4rem;border:3px solid ${isToday ? 'var(--primary)' : 'transparent'};">
@@ -72,17 +72,17 @@ function showProgressDashboard() {
         </div>
         ${d ? `<div style="font-size:0.7rem;color:#888;margin-top:0.2rem;">${d.stars || 0} ⭐</div>` : ''}
       </div>`;
-    }).join('');
+  }).join('');
 
-    // Today's letters / numbers
-    const todayLetters = (todayData.letters || []).join(' ');
-    const todayNumbers = (todayData.numbers || []).join(' ');
-    const todayActivities = (todayData.activities || []).map(a => `<span style="background:#f0f4ff;border-radius:8px;padding:0.2rem 0.7rem;font-size:0.85rem;margin:0.2rem;display:inline-block;">✅ ${a}</span>`).join('');
+  // Today's letters / numbers
+  const todayLetters = (todayData.letters || []).join(' ');
+  const todayNumbers = (todayData.numbers || []).join(' ');
+  const todayActivities = (todayData.activities || []).map(a => `<span style="background:#f0f4ff;border-radius:8px;padding:0.2rem 0.7rem;font-size:0.85rem;margin:0.2rem;display:inline-block;">✅ ${a}</span>`).join('');
 
-    const overlay = document.createElement('div');
-    overlay.id = 'progress-overlay';
-    overlay.style.cssText = `position:fixed;inset:0;z-index:4000;background:rgba(20,20,50,0.93);display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;`;
-    overlay.innerHTML = `
+  const overlay = document.createElement('div');
+  overlay.id = 'progress-overlay';
+  overlay.style.cssText = `position:fixed;inset:0;z-index:4000;background:rgba(20,20,50,0.93);display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;`;
+  overlay.innerHTML = `
     <div style="background:white;border-radius:30px;padding:2rem;max-width:640px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,0.4);">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
         <h2 style="font-size:1.6rem;color:var(--primary);">📊 Guardian Progress</h2>
@@ -129,30 +129,54 @@ function showProgressDashboard() {
         <button class="btn" id="save-notes" style="margin-top:0.5rem;background:var(--primary);padding:0.5rem 1.2rem;font-size:0.9rem;">Save Notes 💾</button>
       </div>
 
-      <!-- RESET -->
-      <div style="text-align:right;">
-        <button id="reset-progress" style="background:none;border:none;color:#ccc;font-size:0.8rem;cursor:pointer;">Reset all progress</button>
+      <!-- RESET & UNDO -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2rem; padding-top:1rem; border-top:1px solid #eee;">
+        <button id="undo-reset" style="background:none;border:none;color:var(--primary);font-size:0.9rem;cursor:pointer;font-weight:bold;display:none;">↩️ Undo Reset</button>
+        <button id="reset-progress" style="background:none;border:none;color:#ff5252;font-size:0.9rem;cursor:pointer;margin-left:auto;">🗑️ Reset all progress</button>
       </div>
     </div>
   `;
 
-    document.body.appendChild(overlay);
+  document.body.appendChild(overlay);
 
-    document.getElementById('close-progress').addEventListener('click', () => overlay.remove());
+  document.getElementById('close-progress').addEventListener('click', () => overlay.remove());
 
-    document.getElementById('save-notes').addEventListener('click', () => {
-        const text = document.getElementById('guardian-notes').value;
-        const d = loadProgress();
-        d[today] = d[today] || { stars: 0, activities: [], letters: [], numbers: [], notes: '' };
-        d[today].notes = text;
-        saveProgress(d);
-        document.getElementById('save-notes').textContent = 'Saved! ✅';
-    });
+  document.getElementById('save-notes').addEventListener('click', () => {
+    const text = document.getElementById('guardian-notes').value;
+    const d = loadProgress();
+    d[today] = d[today] || { stars: 0, activities: [], letters: [], numbers: [], notes: '' };
+    d[today].notes = text;
+    saveProgress(d);
+    document.getElementById('save-notes').textContent = 'Saved! ✅';
+  });
 
-    document.getElementById('reset-progress').addEventListener('click', () => {
-        if (confirm('Reset ALL progress? This cannot be undone.')) {
-            localStorage.removeItem(STORE_KEY);
-            overlay.remove();
-        }
-    });
+  const resetBtn = document.getElementById('reset-progress');
+  const undoBtn = document.getElementById('undo-reset');
+
+  // Show undo if backup exists
+  if (localStorage.getItem(STORE_KEY + '_backup')) {
+    undoBtn.style.display = 'inline-block';
+  }
+
+  resetBtn.addEventListener('click', () => {
+    if (confirm('Reset ALL progress? You can undo this later if it was an accident.')) {
+      const currentData = localStorage.getItem(STORE_KEY);
+      if (currentData) {
+        localStorage.setItem(STORE_KEY + '_backup', currentData);
+      }
+      localStorage.removeItem(STORE_KEY);
+      overlay.remove(); // close the UI so state refreshes
+    }
+  });
+
+  undoBtn.addEventListener('click', () => {
+    if (confirm('Restore previous progress? This will overwrite current data with the backed up data.')) {
+      const backupData = localStorage.getItem(STORE_KEY + '_backup');
+      if (backupData) {
+        localStorage.setItem(STORE_KEY, backupData);
+        localStorage.removeItem(STORE_KEY + '_backup');
+        overlay.remove(); // close the UI so state refreshes
+      }
+    }
+  });
 }
