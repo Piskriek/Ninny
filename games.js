@@ -1444,9 +1444,11 @@ const activities = {
         }
         const b = document.createElement('div');
         b.textContent = '🎈';
-        b.style.cssText = `position:absolute;font-size:4rem;cursor:pointer;left:${Math.random() * 70 + 10}%;bottom:-20%;transition:bottom 3.5s linear;`;
+        b.style.cssText = `position:absolute;font-size:4rem;cursor:pointer;left:${Math.random() * 70 + 10}%;bottom:-20%;transition:bottom 3.5s linear;z-index:10;user-select:none;`;
         area.appendChild(b);
-        setTimeout(() => b.style.bottom = '120%', 50);
+        // Force reflow
+        void b.offsetHeight;
+        setTimeout(() => { b.style.bottom = '120%'; }, 50);
         b.onclick = () => {
           b.textContent = '💥';
           b.style.transition = 'none';
