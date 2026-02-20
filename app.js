@@ -63,8 +63,16 @@ function setWeek(n) {
     currentWeekNum = Math.max(1, Math.min(n, TOTAL_WEEKS));
     window.currentWeekNum = currentWeekNum;
     localStorage.setItem('ninny_week', currentWeekNum);
-    applyWeekTheme();
-    loadActivity(currentActivity || 'weather');
+
+    // Smooth transition
+    const main = document.querySelector('.main-content');
+    if (main) main.classList.add('fade-out');
+
+    setTimeout(() => {
+        applyWeekTheme();
+        loadActivity(currentActivity || 'weather');
+        if (main) main.classList.remove('fade-out');
+    }, 200);
 }
 
 function applyWeekTheme() {
@@ -108,7 +116,7 @@ function buildDailySchedule() {
         return Math.floor((x - Math.floor(x)) * max);
     }
 
-    const available = ['sculptor', 'obstacle', 'scavenger', 'charades', 'music', 'math', 'yoga', 'color', 'shape', 'story', 'drawing', 'match', 'trace'];
+    const available = ['sculptor', 'obstacle', 'scavenger', 'charades', 'music', 'math', 'yoga', 'color', 'shape', 'story', 'drawing', 'match', 'trace', 'breathing', 'balloon', 'sorting'];
     const selected = [];
 
     // Pick 4 unique activities using the seed
@@ -139,6 +147,9 @@ function buildDailySchedule() {
         'drawing': { icon: '🖌️', name: 'Little Artist', time: '10:45 – 11:45' },
         'match': { icon: '🧩', name: 'Memory Match', time: '12:15 – 13:00' },
         'trace': { icon: '✍️', name: 'Letter Tracer', time: '14:00 – 14:45' },
+        'breathing': { icon: '🧘', name: 'Zen Breather', time: '09:30 – 10:15' },
+        'balloon': { icon: '🎈', name: 'Balloon Pop', time: '10:45 – 11:45' },
+        'sorting': { icon: '🗂️', name: 'Category Sorter', time: '12:15 – 13:00' },
         'suitcase': { icon: '🧳', name: 'Memory Suitcase', time: '14:45 – 15:00' }
     };
 
@@ -174,8 +185,16 @@ dayTabs.forEach(tab => {
     tab.addEventListener('click', () => {
         selectedDay = tab.dataset.day;
         window.selectedDay = selectedDay;
-        applyWeekTheme();
-        loadActivity(currentActivity || 'weather');
+
+        // Smooth transition
+        const main = document.querySelector('.main-content');
+        if (main) main.classList.add('fade-out');
+
+        setTimeout(() => {
+            applyWeekTheme();
+            loadActivity(currentActivity || 'weather');
+            if (main) main.classList.remove('fade-out');
+        }, 200);
     });
 });
 

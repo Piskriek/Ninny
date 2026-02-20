@@ -297,6 +297,11 @@ nav {
     min-height: 0;
 }
 
+.fade-out {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+}
+
 /* ══════════════════ GAME ELEMENTS ══════════════════ */
 .game-title {
     font-size: clamp(1.6rem, 4vw, 2.5rem);

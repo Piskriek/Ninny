@@ -64,7 +64,21 @@ function showStars(container, n = 3) {
 }
 
 function roundBadge(current, total) {
-  return `<div style="position:absolute;top:0.8rem;right:1rem;background:var(--accent);color:white;font-weight:bold;padding:0.3rem 0.9rem;border-radius:99px;font-size:0.9rem;">Round ${current}/${total}</div>`;
+  return `<div class="round-badge" style="position:absolute;top:1rem;right:1rem;background:#eee;padding:0.4rem 0.8rem;border-radius:20px;font-weight:bold;font-size:0.9rem;color:#666;">${current}/${total}</div>`;
+}
+
+function speakText(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 0.9;
+  utterance.pitch = 1.1;
+  window.speechSynthesis.speak(utterance);
+}
+
+function speakBtn(text) {
+  const cleanText = text.replace(/<[^>]*>?/gm, '');
+  return `<button class="btn speak-trigger" data-text="${cleanText.replace(/"/g, '&quot;')}" style="background:var(--secondary);color:white;padding:0.4rem 0.8rem;border-radius:12px;font-size:0.9rem;margin-bottom:0.8rem;display:inline-flex;align-items:center;gap:0.4rem;">🔊 Listen</button>`;
 }
 
 function guardianBtn(actKey) {
@@ -688,15 +702,15 @@ const activities = {
 
         container.innerHTML = `
           <h2 class="game-title" style="font-size:1.6rem;">${dayData.emoji} Pack today's memories! 🧳</h2>
-          <div style="display:flex;gap:1rem;width:100%;max-width:700px;align-items:flex-start;flex-wrap:wrap;justify-content:center;">
-            <div style="flex:1;min-width:180px;">
+          <div style="display:flex;gap:1rem;width:100%;max-width:700px;align-items:stretch;flex-wrap:wrap;justify-content:center;">
+            <div style="flex:1;min-width:200px;max-height:50vh;overflow-y:auto;padding-right:0.5rem;box-sizing:border-box;">
               <p style="text-align:center;font-weight:bold;font-size:0.9rem;margin-bottom:0.5rem;">Tap to pack:</p>
               <div style="display:flex;flex-direction:column;gap:0.4rem;">
-                ${available.map(m => `<div class="suitcase-item reporter-btn" data-label="${m.label}" data-icon="${m.icon}" style="font-size:1.3rem;padding:0.5rem 0.9rem;border:3px solid #eee;border-radius:14px;cursor:pointer;background:white;width:100%;text-align:left;">${m.icon} ${m.label}</div>`).join('')}
+                ${available.map(m => `<div class="suitcase-item reporter-btn" data-label="${m.label}" data-icon="${m.icon}" style="font-size:1.2rem;padding:0.5rem;border:3px solid #eee;border-radius:14px;cursor:pointer;background:white;width:100%;text-align:left;box-sizing:border-box;white-space:normal;">${m.icon} ${m.label}</div>`).join('')}
               </div>
             </div>
-            <div style="flex:1;min-width:160px;background:#a1887f;border-radius:18px;padding:0.8rem;border:8px solid #5d4037;min-height:180px;display:flex;flex-wrap:wrap;gap:0.4rem;align-content:flex-start;">
-              ${packed.map(p => `<span style="font-size:2rem;">${p.icon}</span>`).join('')}
+            <div style="flex:1;min-width:180px;background:#a1887f;border-radius:18px;padding:0.8rem;border:8px solid #5d4037;min-height:180px;max-height:50vh;overflow-y:auto;display:flex;flex-wrap:wrap;gap:0.4rem;align-content:flex-start;box-sizing:border-box;">
+              ${packed.map(p => `<span style="font-size:2rem;line-height:1;">${p.icon}</span>`).join('')}
               ${packed.length === 0 ? '<span style="color:rgba(255,255,255,0.4);font-size:0.85rem;">empty</span>' : ''}
             </div>
           </div>
@@ -1367,6 +1381,142 @@ const activities = {
       
       attachGuardian(container, 'sculptor');
     }
+  },
+
+  breathing: {
+    render(container) {
+      recordProgress('activity', 'Breathing');
+      container.innerHTML = `
+        <h2 class="game-title">Zen Breather 🧘</h2>
+        <div style="font-size:5rem;text-align:center;margin:2rem;" id="breathe-icon">😌</div>
+        <p style="text-align:center;font-size:1.4rem;font-weight:bold;color:var(--primary);" id="breathe-text">Ready?</p>
+        <button class="btn" id="start-breathing" style="display:block;margin:2rem auto;background:var(--accent);">Start Breathing ✨</button>
+      `;
+      const txt = container.querySelector('#breathe-text');
+      const icon = container.querySelector('#breathe-icon');
+      container.querySelector('#start-breathing').addEventListener('click', (e) => {
+        e.target.style.display = 'none';
+        let cycles = 0;
+        const cycle = () => {
+          if (cycles >= 3) {
+            txt.textContent = "You did great! 🌟";
+            icon.textContent = "🥰";
+            icon.style.transform = "scale(1)";
+            showStars(container, 3);
+            return;
+          }
+          txt.textContent = "Breathe in...";
+          icon.style.transition = "transform 4s ease-out";
+          icon.style.transform = "scale(1.5)";
+          setTimeout(() => {
+            txt.textContent = "Breathe out...";
+            icon.style.transition = "transform 4s ease-in";
+            icon.style.transform = "scale(1)";
+            setTimeout(() => {
+              cycles++;
+              cycle();
+            }, 4000);
+          }, 4000);
+        };
+        cycle();
+      });
+    }
+  },
+
+  balloon: {
+    render(container) {
+      recordProgress('activity', 'Balloon Pop');
+      container.innerHTML = `
+        <h2 class="game-title">Balloon Pop 🎈</h2>
+        <p style="text-align:center;font-size:1.2rem;color:#666;">Pop 5 balloons!</p>
+        <div id="balloon-area" style="position:relative;height:300px;background:#e0f7fa;border-radius:24px;overflow:hidden;margin:1rem;border:4px solid #b2ebf2;">
+        </div>
+        <div id="feedback" style="text-align:center;font-size:1.4rem;font-weight:bold;height:2rem;color:var(--primary);margin-top:1rem;"></div>
+      `;
+      const area = container.querySelector('#balloon-area');
+      let popped = 0;
+      
+      const spawn = () => {
+        if (popped >= 5) {
+          feedback(container, 'All popped! 🎉', 'var(--success)');
+          showStars(container, 3);
+          return;
+        }
+        const b = document.createElement('div');
+        b.textContent = '🎈';
+        b.style.cssText = `position:absolute;font-size:4rem;cursor:pointer;left:${Math.random()*70 + 10}%;bottom:-20%;transition:bottom 3.5s linear;`;
+        area.appendChild(b);
+        setTimeout(() => b.style.bottom = '120%', 50);
+        b.onclick = () => {
+          b.textContent = '💥';
+          b.style.transition = 'none';
+          if (window.AudioFX) window.AudioFX.pop();
+          popped++;
+          feedback(container, `${popped} popped!`, 'var(--secondary)');
+          setTimeout(() => b.remove(), 200);
+          setTimeout(spawn, 500);
+        };
+        b.addEventListener('transitionend', () => {
+          if(b.textContent === '🎈') { b.remove(); spawn(); }
+        });
+      };
+      setTimeout(spawn, 500);
+    }
+  },
+
+  sorting: {
+    render(container) {
+      recordProgress('activity', 'Sorting');
+      container.innerHTML = `
+        <h2 class="game-title">Color Sorting 🧩</h2>
+        <p style="text-align:center;font-size:1.1rem;color:#888;">Sort the items into the right boxes!</p>
+        <div style="display:flex;justify-content:space-around;margin:1rem 0;" id="boxes">
+          <div data-color="red" style="width:80px;height:80px;border:4px dashed #ff5252;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2rem;background:#ffebee;"></div>
+          <div data-color="blue" style="width:80px;height:80px;border:4px dashed #448aff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2rem;background:#e3f2fd;"></div>
+          <div data-color="green" style="width:80px;height:80px;border:4px dashed #4caf50;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2rem;background:#e8f5e9;"></div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:1rem;margin:2rem 0;min-height:60px;" id="items"></div>
+        <div id="feedback" style="text-align:center;font-size:1.2rem;font-weight:bold;color:var(--primary);min-height:2rem;"></div>
+      `;
+      const itemsContainer = container.querySelector('#items');
+      const items = [
+        { emoji: '🍎', color: 'red' }, { emoji: '🚗', color: 'red' },
+        { emoji: '🐳', color: 'blue' }, { emoji: '📘', color: 'blue' },
+        { emoji: '🐸', color: 'green' }, { emoji: '🌳', color: 'green' }
+      ].sort(() => Math.random() - 0.5);
+      
+      let currentItem = 0;
+      
+      const renderNext = () => {
+        itemsContainer.innerHTML = '';
+        if (currentItem >= items.length) {
+          feedback(container, 'All sorted! 🌟', 'var(--success)');
+          showStars(container, 3);
+          return;
+        }
+        const item = items[currentItem];
+        const el = document.createElement('div');
+        el.textContent = item.emoji;
+        el.style.cssText = 'font-size:3.5rem;cursor:pointer;animation:bounce-in 0.5s;';
+        itemsContainer.appendChild(el);
+        
+        container.querySelectorAll('#boxes div').forEach(box => {
+          box.onclick = () => {
+            if (box.dataset.color === item.color) {
+              if (window.AudioFX) window.AudioFX.success();
+              box.textContent = item.emoji;
+              currentItem++;
+              setTimeout(() => { box.textContent = ''; renderNext(); }, 600);
+            } else {
+              if (window.AudioFX) window.AudioFX.error();
+              el.style.transform = 'translateX(-10px)';
+              setTimeout(() => el.style.transform = 'translateX(10px)', 100);
+              setTimeout(() => el.style.transform = 'translateX(0)', 200);
+            }
+          };
+        });
+      };
+      renderNext();
+    }
   }
 };
-// <-- End of activities object (do not replace this line, we inject before it)
