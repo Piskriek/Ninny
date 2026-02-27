@@ -104,17 +104,54 @@ function showGuardianOverlay(actKey) {
 
   const overlay = document.createElement('div');
   overlay.className = 'guardian-overlay bounce-in';
+
+  const isPremium = localStorage.getItem('bloom_premium_unlocked') === 'true';
+
+  // Build the extended content block
+  let extendedHtml = '';
+  if (isPremium) {
+    const extList = Array.isArray(raw.extend) ? raw.extend : [raw.extend];
+    extendedHtml = `
+          <div style="background:#f0f4f8; padding:1.5rem; border-radius:16px; margin-top:1.5rem; border:2px solid var(--accent);">
+            <h3 style="color:var(--accent); font-size:1.2rem; margin-bottom:0.8rem;">✨ Extended Play (Unlocked)</h3>
+            <ul style="padding-left:1.5rem; margin:0; font-size:1.05rem; line-height:1.5; color:#444;">
+                ${extList.map(item => `<li style="margin-bottom:0.5rem;">${item}</li>`).join('')}
+            </ul>
+          </div>
+      `;
+  } else {
+    extendedHtml = `
+          <div style="background:#fafafa; padding:1.5rem; border-radius:16px; margin-top:1.5rem; text-align:center; border:2px dashed #ccc;">
+            <h3 style="color:#888; font-size:1.1rem; margin-bottom:0.5rem;">🔒 Extended Play</h3>
+            <p style="font-size:0.95rem; color:#666; margin-bottom:1rem;">Unlock 5 extra creative variations for this activity by getting the full app!</p>
+            <button class="btn" id="unlock-premium" style="background:linear-gradient(135deg, var(--accent) 0%, #ff9e00 100%); padding:0.6rem 1.5rem; font-size:1rem; box-shadow:0 4px 10px rgba(255,183,3,0.3);">Unlock Full Version ⭐️</button>
+          </div>
+      `;
+  }
+
   overlay.innerHTML = `
     <div class="guardian-modal">
       <h2>🧑‍🤝‍🧒 ${raw.intro.split('.')[0]}</h2>
       <p class="guardian-intro">${raw.intro}</p>
       <ol class="guardian-steps">${raw.steps.map(s => `<li>${s}</li>`).join('')}</ol>
-      <div class="guardian-extend"><strong>💡 Extend the learning:</strong> ${raw.extend}</div>
-      <button class="btn" id="close-guardian" style="margin-top:1.5rem;background:var(--primary);">Back to Play ✨</button>
+      ${extendedHtml}
+      <button class="btn" id="close-guardian" style="margin-top:2rem;background:var(--primary);width:100%;">Back to Play</button>
     </div>
   `;
   document.body.appendChild(overlay);
+
   document.getElementById('close-guardian').addEventListener('click', () => overlay.remove());
+
+  const unlockBtn = document.getElementById('unlock-premium');
+  if (unlockBtn) {
+    unlockBtn.addEventListener('click', () => {
+      if (confirm('TEST ENVIRONMENT: Unlock full version for free?')) {
+        localStorage.setItem('bloom_premium_unlocked', 'true');
+        overlay.remove();
+        showGuardianOverlay(actKey); // Re-render with unlocked state
+      }
+    });
+  }
 }
 
 // ── Get the current week's curriculum data ────────────────

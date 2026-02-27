@@ -32,4 +32,20 @@ If the tablet lacks a persistent Wi-Fi connection to your local network, you can
 2. To run entirely offline without a PC server, download a free app like **"Kiosk Pro Lite"** from the App Store.
 3. Import your `Ninny` files via iTunes/Finder File Sharing into Kiosk Pro, and set the homepage to `index.html`.
 
+
 Enjoy the premium animated UI, new games, and fixed memory suitcase layout on the tablet!
+
+---
+
+## 🚀 Native Android App (Google Play Store)
+
+Because you have successfully built Little Bloom Academy exactly to Progressive Web App (PWA) standards, you can package this folder into a Native Android App (an `.aab` or `.apk` file) and upload it directly to the Google Play Console!
+
+This is achieved using a technology called a **Trusted Web Activity (TWA)**, meaning Chrome will render the game perfectly fullscreen inside a real Android app shell—no Java or Kotlin required!
+
+**How to generate your Play Store App:**
+
+1. **Host the App:** This `c:\Work\Ninny` folder must be hosted on a public, secure server. You can upload the entire folder to GitHub Pages, Netlify, or Vercel for free.
+2. **Visit PWABuilder:** Go to [PWABuilder.com](https://www.pwabuilder.com/) (managed by Microsoft).
+3. **Generate Package:** Enter the public URL of your hosted game. PWABuilder will automatically read your `manifest.json` and generate a ready-to-upload Android package.
+4. **Publish:** Take the generated `.aab` file and upload it to the Google Play Store as your first release!
