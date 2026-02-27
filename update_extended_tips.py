@@ -1,71 +1,81 @@
-import re
-import os
-import json
+import re, json
 
 filepath = r"c:\Work\Ninny\data.js"
 with open(filepath, 'r', encoding='utf-8') as f:
     content = f.read()
 
-mappings = {
+# Rich multi-step extended play guides, keyed by activity type
+# Each string is a detailed paragraph/mini-guide, not a one-liner
+EXTENDED = {
     'weather': [
-        "Play 'Weather Reporter' - give them a spoon as a microphone and let them report.",
-        "Draw a 'Weather House' showing what clothes to wear in different rooms.",
-        "Talk about extreme weather: 'What is a tornado? What is a blizzard?'",
-        "Make a weather chart that they can update every single morning.",
-        "Learn a weather song together on YouTube."
+        "🌤️ WEATHER STATION BUILD (20 min) — Help her build a real weather station using things around the house! Use a glass jar outdoors to measure rainfall, a piece of paper tied to a stick to check wind direction, and a basic thermometer if you have one. Every morning she visits the station, reads the data, and fills in her weather diary. After 5 days, sit together and ask: 'Which day was hottest? Which was windiest?' Teach her the word METEOROLOGIST and let her wear it like a badge.",
+        "🌪️ EXTREME WEATHER LESSON (15 min) — Go on YouTube and find a 2-minute clip of a REAL tornado, hurricane, hailstorm, or sandstorm. Watch it together. Before watching, ask: 'What do you think you'd hear? What would you feel?' Afterwards: 'Where would we go if this happened here? What would we bring?' Draw the extreme weather on a big piece of paper together. Label it: wind, rain, cloud, lightning. Introduce the word STORM SURGE or DROUGHT — pick whichever she finds most dramatic.",
+        "🌈 RAINBOW SCIENCE (20 min) — You need: a shallow dish of water, a small mirror, and sunlight (or a torch). Place the mirror in the dish at an angle, shine the light, and tilt gently until a rainbow appears on the wall or ceiling. Let her find the rainbow. Ask: 'How many colours can you name? Which colour comes first?' Teach the mnemonic ROY G BIV (Red, Orange, Yellow, Green, Blue, Indigo, Violet). Then draw your own rainbow together and label each stripe.",
+        "📺 WEATHER REPORTER SHOW (15 min) — Set up a 'TV studio' in the lounge: a cardboard backing, a spoon as a microphone. She is the Weather Reporter, you are the camera. She must announce: Today's date, today's weather, what to wear, and what tomorrow will be like. Record it on your phone. Play it back. Discuss: 'What makes a good reporter? Did you speak clearly? What would you change?' This builds public speaking, vocabulary, and confidence.",
+        "📅 SEASON WHEEL CRAFT (25 min) — You need: one large sheet of paper, scissors, coloured pencils. Draw a big circle and divide it into 4 equal sections. Label each section: Summer, Autumn, Winter, Spring. In each section she draws: the weather, what she wears, what animals do, and her favourite activity for that season. Cut out a cardboard arrow and poke through the center with a split pin or toothpick. She spins it and names that season's activities. Put it on her bedroom wall!"
     ],
     'sculptor': [
-        "Trade artworks and try to add one missing detail to each other's drawings.",
-        "Only use your non-dominant hand to draw the next picture.",
-        "Try drawing with your eyes closed and guess what it is!",
-        "Sculpt the alphabet letters out of the playdough.",
-        "Create a story where your sculpted characters come to life."
+        "🏺 PINCH POT CHALLENGE (20 min) — Use real clay, playdough, or self-hardening air-dry clay. Teach her the PINCH POT technique: press your thumb into the centre of a ball of clay, then pinch the walls up slowly to form a little bowl. This is one of the oldest art techniques in the world! Once made, she can press leaves, lace, or textured objects into the walls to create a pattern. Leave to dry. When hard, she can paint it. You now have a real handmade bowl she made herself.",
+        "🌍 MAP MAKING (25 min) — Ask her to sculpt or draw a MAP of your home from above, as if she is a bird looking down. It doesn't have to be perfect! She draws each room, the garden, the street. Add the compass points together: North, South, East, West. Ask: 'Which direction does your bedroom face? Where does the sun rise from?' Then make it a game: 'Hide a treasure somewhere in the house — mark it on the map with an X. I have to find it!' This teaches spatial reasoning and geography.",
+        "🎭 COLLAGE PORTRAIT GALLERY (30 min) — Collect old magazines or newspapers, scissors, glue, and a big sheet of paper. Her theme: PEOPLE IN OUR COMMUNITY. She cuts out faces, clothes, buildings, and jobs to create a scene of community life. While she builds: 'Who is this person? What job do they do? How does this person help us?' When done, she presents it to you like a gallery guide: 'This is a doctor, she helps sick people...' Builds cutting skills, creativity, and social awareness.",
+        "🌿 NATURE CAST (30 min) — Collect leaves, flowers, bark, or seed pods from outside. Press them flat. Then roll playdough flat like a pancake and press each nature item into it firmly. Peel it away carefully — the texture is perfectly captured in the clay! She creates a whole panel of nature textures. Ask: 'Which texture is roughest? Smoothest? What made these marks?' Allow to air dry. Paint with a single base colour and then dry-brush a different colour over the top to highlight the textures.",
+        "👩‍🎨 THE ART CRITIC GAME (20 min) — Print or draw 5 simple artworks (or use ones she has already made). She becomes THE ART CRITIC. Give her a magnifying glass (even a toilet roll tube works!). For each piece she must say: One thing she LIKES, One thing she would CHANGE, One FEELING the art gives her, and One WORD she thinks the artist is trying to say. Write her reviews on paper like a real gallery. This is genuine critical thinking and emotional intelligence disguised as art!"
     ],
     'obstacle': [
-        "Do the entire obstacle course backwards!",
-        "Balance a book on your head while navigating the course.",
-        "Time the course and see if they can beat their own record by 3 seconds.",
-        "Have them verbally describe their movements ('I am jumping OVER the pillow').",
-        "Freeze like a statue every time you clap your hands during the course."
+        "🏗️ ARCHITECT COURSE (30 min) — This time SHE designs the course. Give her 10 minutes to place pillows, chairs, tape lines, and blankets around the room to build the ultimate obstacle course. She draws a map of it on paper, gives it a name, and assigns a POINT VALUE to each obstacle (harder = more points). Then you run it. Then she runs it. Keep a running scoreboard for the week. This teaches engineering thinking, planning, and task sequencing.",
+        "🎵 MUSICAL OBSTACLE COURSE (20 min) — Play upbeat music while running the course. The rule: when the music stops, FREEZE wherever you are — even mid-jump! When music resumes, continue. This adds a listening challenge to the physical one. Alternate: the music TEMPO controls how fast she must move — fast song = run, slow song = move in s-l-o-w motion. She loves slow motion! Teaches listening, body control, and rhythm.",
+        "📦 BLINDFOLD NAVIGATION (15 min) — She puts on a blindfold (or closes her eyes tightly). You stand 3 steps behind her and guide her through the course using ONLY words: 'Take two steps forward. Now turn LEFT. Big step OVER the pillow. Duck DOWN under the chair.' This is powerful for language development, trust, and spatial vocabulary. Then swap roles — SHE guides you. Warning: she will absolutely try to crash you into a wall on purpose!",
+        "⏱️ RELAY RACE FORMAT (20 min) — Turn the course into a relay with a twist. She runs one 'leg' (section) of the course, then taps your hand. You run the next leg. Keep a total team time. Then try to beat it. Vary the rules: one leg on tiptoe, one leg hopping on one foot, one leg with arms folded behind the back. Count how many 'legs' it takes to complete the course together. Great for addition skills ('That was leg 3 and leg 4 — how many total so far?').",
+        "🌟 CHAMPIONSHIP DAY (30 min) — Build the hardest, longest, most creative course of the week. Give it a dramatic name: 'THE SUPER BLOOM CHALLENGE'. Award points for: speed, style, creativity, and sportsmanship. Print or draw a CERTIFICATE on paper afterwards: 'I hereby certify that [Name] completed the Super Bloom Challenge with outstanding bravery and athletic skill.' Sign it. This is her trophy. Frame it if you can. This is about ending the session with enormous pride."
     ],
     'scavenger': [
-        "Find objects that are only a specific color as well as starting with the letter.",
-        "Make a pile of the found objects and sort them from smallest to largest.",
-        "Have them blindfold you and guide your hand to touch the found objects.",
-        "Create a silly sentence using only the objects you found.",
-        "Hide the objects again and make a treasure map to find them."
+        "📖 LETTER BOOK MAKING (30 min) — Each letter gets its own page in a homemade book. Fold 5–6 sheets of paper in half and staple or tie them together. On each page: the big letter, the small letter, a drawing of the word, and the word written out. She decorates each page her own way. By the end of the week you have her very own alphabet book. Read it at bedtime instead of a story. She authored a BOOK. That is enormous for self-esteem.",
+        "🔊 PHONICS SOUND HUNT (20 min) — Pick one letter. Set a timer for 3 minutes. She races around the house finding as many things as possible that START with that letter sound. She must say the word out loud as she grabs it. Points for: finding it, saying the sound clearly, and using it in a sentence. 'Apple! A-A-Apple! I eat an apple for snack.' Then sort everything: objects with the same ENDING sound on one side, same STARTING sound on the other. Phonemic awareness is the #1 predictor of reading success.",
+        "✉️ LETTER WRITING (25 min) — She writes (or dictates while you scribe) a real letter to someone she loves — grandparent, cousin, friend, or a made-up pen pal. The letter must include: a greeting, one thing she did this week, one question for the other person, and a sign-off. She decorates the envelope, addresses it, and you post it for real. OR email it with a photo of her drawing attached. Getting a reply back in a few days is magic for motivation to read and write more.",
+        "🃏 ALPHABET WAR (CARD GAME) — Write all 26 letters on small cards (index cards or cut-up cereal boxes). Shuffle and deal equally between you two. Flip one card each at the same time. Whoever can say an animal, food, or object starting with THEIR letter FIRST wins both cards. If neither can think of one in 5 seconds, both cards go to the middle as a 'Jackpot Pile'. The next round's winner takes those too. This is a fast-paced, high-energy phonics workout disguised as a battle.",
+        "🌍 WORLD ALPHABET ADVENTURE (20 min) — Working through the letters of the week, look up one country, city, or landmark for each letter together. 'A is for AFRICA — where is Africa on the globe? B is for BRAZIL — what animal lives there?' Use a globe, atlas, or Google Maps. She puts a finger on each place. Ask: 'Is it near or far? How would we get there? What language do they speak?' This plants seeds of global curiosity and geographical thinking that last a lifetime."
     ],
     'charades': [
-        "Do the charades in slow motion.",
-        "Only use facial expressions, absolutely no hand movements.",
-        "Act out an animal waking up in the morning.",
-        "Try acting out two animals at the exact same time (a flying elephant!).",
-        "Have them teach YOU a new animal charade you've never seen."
+        "🎬 MINI WILDLIFE DOCUMENTARY (20 min) — She is now SIR/DAME ATTENBOROUGH. Set up a couch as the camera zone. She picks an animal, hides behind a chair, and you provide the narration: 'And here we see the magnificent LION, stealthily approaching the watering hole...' She acts it out as the wildlife. Record 2 minutes on your phone. Watch it back and add commentary. Ask: 'What does this animal eat? Where does it sleep? What are its predators?' Develop naturalistic intelligence through dramatic play.",
+        "🦁 SOUTH AFRICAN SAFARI MAP (25 min) — Draw a BIG map of Southern Africa on a large sheet of paper together. Mark: the Kruger National Park, the Kalahari Desert, the Drakensberg Mountains, the coast. Then she draws each SA animal you have played on the map, placing them in their natural habitat. 'Does a hippo live in the desert or by the river? Does a meerkat live in the jungle or the Kalahari?' This is geography, biology, and art session in one.",
+        "🎭 EMOTION ANIMAL THEATRE (15 min) — Pick three animals and three emotions from a hat. On pieces of paper write: LION, ELEPHANT, FROG. On separate pieces: HAPPY, SCARED, ANGRY. She draws one of each and must act out that animal having that emotion. A HAPPY LION is totally different from a SCARED LION. A FROG who is ANGRY! This teaches emotional recognition, empathy, and physical expression simultaneously. Award dramatic flair points.",
+        "🔢 ANIMAL MATHS GAME (20 min) — Use the animals as a maths context. 'Three lions are sleeping in the sun. Two more arrive. How many lions total?' She acts out each lion. 'Five zebras are eating grass. A cheetah arrives and ROAR! — two zebras run away. How many are left?' She acts the whole scene out physically. Story-based maths with movement is scientifically proven to dramatically improve number retention in early childhood. Use this every single week.",
+        "🎶 ANIMAL SOUND BAND (20 min) — Each of you picks two animals. Your animals make a RHYTHM together. Lion roars on beat 1, Elephant trumpets on beat 2, Frog ribbits on beat 3, Bird tweets on beat 4. Clap or drum on a pot between sounds. Build a full 4-beat-bar animal orchestra. Add complexity: what if the LION roars TWICE as fast? Change the tempo. Change the animals. She is learning rhythm, beat, and music theory through animal sounds and pure silliness."
     ],
     'suitcase': [
-        "Recall events in reverse order: what happened LAST before what happened FIRST?",
-        "Ask them to teach a toy what they learned today.",
-        "Draw the best part of the day using only three colors.",
-        "Sing a recap of the day to the tune of 'Twinkle Twinkle'.",
-        "Ask what they would change about today if they had a magic wand."
+        "📓 BLOOM JOURNAL ENTRY (20 min) — Today you write a proper journal entry together. The format: Date at the top. One drawing of the BEST moment. Three sentences: 'Today I learned... Today I felt... Tomorrow I want to...' You write her words as she dictates them if she can't write yet — or she tries herself and you help with spelling. Read it back to her. Ask: 'How do you think you'll feel reading this when you're 10 years old?' This is her autobiography in progress. It is one of the most powerful educational habits you can instil in your child.",
+        "🗣️ TEACH IT BACK CHALLENGE (15 min) — She picks ONE thing she learned today. Her job is to teach it to an imaginary student — a toy, a pet, or YOU pretending you know nothing. The rule: use SIMPLE words as if explaining to a baby. She cannot say 'just' — she must actually explain. Research confirms that teaching something to another person is the single most effective way to consolidate learning. This exercise also builds public speaking, confidence, and organizational thinking.",
+        "🌟 PRIDE CEREMONY (10 min) — This is a ritual that takes 10 minutes but leaves a memory that lasts years. At the end of the day, you and she face each other. She tells you: ONE thing she's proud of from today. You tell her: TWO things YOU noticed her doing well (be specific: 'When you tried the obstacle again even though you fell — that was BRAVE'). Then she gives you a score out of 10 for today and explains WHY. Shake hands like professionals. This is emotional vocabulary, self-assessment, and bonding.",
+        "🔮 TOMORROW PLANNING SESSION (15 min) — Pull out the app and look at TOMORROW's activities together. She reads the titles with you. Ask: 'Which one are you most excited for? Which one do you think will be hardest? What question do you have about tomorrow?' Help her prepare: if there's a scavenger hunt, hide some letters in the house tonight so she can 'discover' them tomorrow. If it's art day, lay out the supplies. Children who know what to expect before a session learn dramatically more when it arrives.",
+        "📞 VIDEO CALL SHOW AND TELL (10 min) — Call a grandparent, aunt, uncle, or family friend on video call RIGHT NOW, at the end of the day. She has 2 minutes to tell them: one thing she learned, one thing she made, and one thing she's proud of. The adult on the other end asks one question. This embeds today's learning through social sharing, which is a higher-order cognitive activity. It also makes the grandparent's day. Everybody wins. Do this at least once a week."
     ]
 }
 
-def fix_extend(match):
+def replace_extend(match):
     act_name = match.group(1)
-    ext_list = mappings.get(act_name, mappings['weather'])
-    
-    # Use json.dumps to safely output double quotes
-    ext_str = "extend: " + json.dumps(ext_list)
-    
-    return f"{act_name}: {{ intro: {match.group(2)}, steps: {match.group(3)}, {ext_str} }}"
+    rest = match.group(2)
+    ext_list = EXTENDED.get(act_name, EXTENDED['weather'])
+    ext_str = "extend: " + json.dumps(ext_list, ensure_ascii=False)
+    # Replace whatever extend currently is in the rest
+    rest_fixed = re.sub(r',\s*extend:\s*(\[.*?\]|"[^"]*")', '', rest, flags=re.DOTALL)
+    return f"{act_name}: {{{rest_fixed}, {ext_str} }}"
 
-# Target the currently broken array strings
-pattern = re.compile(r'(\w+):\s*\{\s*intro:\s*([^,]+),\s*steps:\s*(\[.*?\]),\s*extend:\s*\[.*?\]\s*\}', re.DOTALL)
+pattern = re.compile(r'(\w+):\s*\{(.*?)\}(?=\s*,|\s*\})', re.DOTALL)
 
-new_content = pattern.sub(fix_extend, content)
+def replacer(m):
+    act_name = m.group(1)
+    inner = m.group(2)
+    if act_name not in EXTENDED:
+        return m.group(0)
+    if 'intro:' not in inner or 'steps:' not in inner:
+        return m.group(0)
+    ext_list = EXTENDED[act_name]
+    inner_fixed = re.sub(r',\s*extend:\s*\[.*?\]', '', inner, flags=re.DOTALL)
+    ext_str = ", extend: " + json.dumps(ext_list, ensure_ascii=False)
+    return f"{act_name}: {{{inner_fixed}{ext_str} }}"
+
+new_content = pattern.sub(replacer, content)
 
 with open(filepath, 'w', encoding='utf-8') as f:
     f.write(new_content)
-
-print("Fixed quotes in data.js")
+print("Done — rich extended play content injected into data.js")
