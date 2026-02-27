@@ -3,10 +3,17 @@
   "short_name": "Little Bloom",
   "description": "A 26-week Grade R learning programme for kids and their guardians.",
   "start_url": "./index.html",
+  "id": "com.littlebloomacademy.app",
   "display": "standalone",
   "background_color": "#ffb703",
   "theme_color": "#ffb703",
   "orientation": "portrait",
+  "screenshots": [
+    { "src": "./littlebloom_screenshot_01.png", "type": "image/png", "form_factor": "narrow" },
+    { "src": "./littlebloom_screenshot_02.png", "type": "image/png", "form_factor": "narrow" },
+    { "src": "./littlebloom_screenshot_03.png", "type": "image/png", "form_factor": "narrow" },
+    { "src": "./littlebloom_screenshot_04.png", "type": "image/png", "form_factor": "narrow" }
+  ],
   "icons": [
     {
       "src": "./littlebloom_icon.png",
@@ -15,7 +22,7 @@
       "purpose": "any"
     },
     {
-      "src": "./littlebloom_icon.png",
+      "src": "./littlebloom_icon_512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
